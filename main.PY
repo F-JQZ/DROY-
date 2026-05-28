@@ -1,11 +1,13 @@
 import discord
 from discord.ext import commands
-from discord.ui import View, Modal, TextInput
+from discord.ui import View, Modal, TextInput, Select
 import asyncio
-import os  # أضفنا مكتبة النظام لقراءة التوكن بأمان
+import os
+import random  # أضفنا مكتبة الراندوم لحساب أرقام التيكت من 1 إلى 9999
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guilds = True  # مهمة للتحكم برومات التيكت وصلاحياتها
 allowed_mentions = discord.AllowedMentions(everyone=True, roles=True, users=True)
 bot = commands.Bot(command_prefix="!", intents=intents, allowed_mentions=allowed_mentions)
 
@@ -14,10 +16,132 @@ bot = commands.Bot(command_prefix="!", intents=intents, allowed_mentions=allowed
 # ==========================================
 
 # آيدي روم الفاصل التلقائي (ضع 0 لتعطيله)
-TARGET_CHANNEL_ID = 0  # مثال: 1234567890123456789
+TARGET_CHANNEL_ID = 1508308686932803715 
 
-# رابط صورة الفاصل
-SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245084930121760818/image_2.png"
+# رابط صورة الفاصل الأسود (Droy Store)
+SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245091722830811218/cdf7074f1d9df649.png"
+
+# 🎫 إعدادات نظام التيكت (ضع الآيديهات الخاصة بسيرفرك هنا)
+OPEN_TICKETS_CATEGORY_ID = 123456789012345678    # آيدي كاتيغوري التيكتات المفتوحة
+CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  # آيدي كاتيغوري التيكتات المقفلة
+STAFF_ROLE_ID = 112233445566778899               # آيدي رتبة الدعم الفني (الستاف)
+
+# ==========================================
+# 🎫 نظام التيكت (Ticket System) — الجديد
+# ==========================================
+
+class TicketControlView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Close", style=discord.ButtonStyle.secondary, emoji="🔒", custom_id="close_ticket_btn")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        channel = interaction.channel
+        guild = interaction.guild
+        closed_category = guild.get_channel(CLOSED_TICKETS_CATEGORY_ID)
+        staff_role = guild.get_role(STAFF_ROLE_ID)
+        
+        # تعديل اسم الروم ليصبح قبله علامة القفل
+        new_name = f"🔒-{channel.name}"
+        
+        # سحب صلاحية الكتابة من الأعضاء وابقائها للستاف
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        
+        await channel.edit(name=new_name, category=closed_category, overwrites=overwrites)
+        
+        # رسالة الإغلاق باللون الرصاصي التصميمي
+        embed_closed = discord.Embed(
+            description="🔒 **تم إغلاق التذكرة بنجاح وتحويلها للأرشيف.**",
+            color=0x7f8c8d
+        )
+        await channel.send(embed=embed_closed)
+
+
+class TicketSelect(Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(
+                label="شراء منتجات المتجر", 
+                description="لشراء منتجات المتجر اضغط على هذا الخيار", 
+                emoji="🛒", 
+                value="buy"
+            ),
+            discord.SelectOption(
+                label="استفسار", 
+                description="للاستفسار اضغط على هذا الخيار", 
+                emoji="❓", 
+                value="info"
+            )
+        ]
+        super().__init__(placeholder="اضغط هنا لاختيار نوع التذكرة...", min_values=1, max_values=1, custom_id="ticket_select_menu")
+
+    async def callback(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        user = interaction.user
+        staff_role = guild.get_role(STAFF_ROLE_ID)
+        open_category = guild.get_channel(OPEN_TICKETS_CATEGORY_ID)
+        
+        # عدّاد عشوائي للتيكت من 1 إلى 9999
+        ticket_number = f"{random.randint(1, 9999):04d}"
+        
+        if self.values[0] == "buy":
+            channel_name = f"شراء-{ticket_number}"
+            ticket_title = "تذكرة شراء منتجات"
+        else:
+            channel_name = f"استفسار-{ticket_number}"
+            ticket_title = "تذكرة استفسار"
+
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            user: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True),
+            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True)
+        }
+
+        ticket_channel = await guild.create_text_channel(
+            name=channel_name,
+            category=open_category,
+            overwrites=overwrites
+        )
+
+        await interaction.response.send_message(f"✅ تم فتح تذكرتك بنجاح: {ticket_channel.mention}", ephemeral=True)
+
+        # رسالة ترحيبية باللون الرصاصي التصميمي
+        embed_welcome = discord.Embed(
+            title=ticket_title,
+            description=f"{user.mention}\nسيتم الرد عليك في أقرب وقت ممكن من قبل الدعم الفني.",
+            color=0x7f8c8d
+        )
+        embed_welcome.set_footer(text="Droy Store - Ticket System")
+
+        await ticket_channel.send(
+            content=f"{user.mention} {staff_role.mention if staff_role else ''}", 
+            embed=embed_welcome, 
+            view=TicketControlView()
+        )
+
+
+class TicketDropdownView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(TicketSelect())
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def send_ticket(ctx):
+    """يرسل بنل التيكت القائمة المنسدلة (للإدارة فقط)"""
+    embed_panel = discord.Embed(
+        title="🎫 مركز الدعم الفني | Droy Store",
+        description="أهلاً بك في مركز المساعدة الخاص بمتجرنا.\n\nالرجاء اختيار القسم المناسب من القائمة بالأسفل لفتح تذكرة جديدة.",
+        color=0x7f8c8d
+    )
+    await ctx.send(embed=embed_panel, view=TicketDropdownView())
+    await ctx.message.delete()
 
 # ==========================================
 # ⭐ نظام التقييم — Droy Store
@@ -196,10 +320,17 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
+    # تسجيل الـ Views عشان تظل الأزرار والقوائم شغالة حتى لو رستر البوت
+    bot.add_view(FeedbackView())
+    bot.add_view(BoostView())
+    bot.add_view(NitroView())
+    bot.add_view(TicketDropdownView())
+    bot.add_view(TicketControlView())
+    
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name="شغال 24/7 🚀"))
+    await bot.change_presence(activity=discord.Game(name=" droyy 🚀"))
 
-# السطر المعدل ليقرأ التوكن بأمان من لوحة تحكم Railway
+# السطر الخاص بالتوكن كما هو بدون تعديل
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
     bot.run(TOKEN)
