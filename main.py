@@ -33,8 +33,9 @@ class FeedbackModal(Modal):
         stars_number = int(self.stars_input.value)
         stars_emojis = "⭐" * stars_number
         
-        embed = discord.Embed(
+       embed = discord.Embed(
             title="✨ شكراً على تقييمك !",
+            description=f"""
             description=f"```\n• {self.comment_input.value}\n
 ```",
             color=0x808080
