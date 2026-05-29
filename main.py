@@ -22,6 +22,11 @@ SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121
 # 🎫 نظام التيكت (Ticket System)
 # ==========================================
 
+# --- ضع هذه الآيديات في بداية ملف البوت ---
+STAFF_ROLE_ID = 000000000000000000
+OPEN_TICKETS_CATEGORY_ID = 000000000000000000
+CLOSED_TICKETS_CATEGORY_ID = 000000000000000000
+
 class TicketControlView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -39,80 +44,50 @@ class TicketControlView(View):
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
-        
         await channel.edit(name=new_name, category=closed_category, overwrites=overwrites)
-        
-        embed_closed = discord.Embed(
-            description="🔒 **تم إغلاق التذكرة بنجاح وتحويلها للأرشيف.**",
-            color=0x7f8c8d
-        )
-        await channel.send(embed=embed_closed)
-
+        await channel.send("🔒 **تم إغلاق التذكرة بنجاح.**")
 
 class TicketSelect(Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="شراء منتجات المتجر", description="لشراء منتجات المتجر اضغط على هذا الخيار", emoji="🛒", value="buy"),
-            discord.SelectOption(label="استفسار", description="للاستفسار اضغط على هذا الخيار", emoji="❓", value="info")
+            discord.SelectOption(label="شراء منتجات المتجر", emoji="🛒", value="buy"),
+            discord.SelectOption(label="استفسار", emoji="❓", value="info")
         ]
-        super().__init__(placeholder="اضغط هنا لاختيار نوع التذكرة...", min_values=1, max_values=1, custom_id="ticket_select_menu")
+        super().__init__(placeholder="اضغط هنا لفتح تذكرة...", min_values=1, max_values=1, custom_id="ticket_select_menu")
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
         user = interaction.user
         staff_role = guild.get_role(STAFF_ROLE_ID)
         open_category = guild.get_channel(OPEN_TICKETS_CATEGORY_ID)
-        
         ticket_number = f"{random.randint(1, 9999):04d}"
         
-        if self.values[0] == "buy":
-            channel_name = f"شراء-{ticket_number}"
-            ticket_title = "تذكرة شراء منتجات"
-        else:
-            channel_name = f"استفسار-{ticket_number}"
-            ticket_title = "تذكرة استفسار"
-
+        channel_name = f"{'شراء' if self.values[0] == 'buy' else 'استفسار'}-{ticket_number}"
+        
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            user: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True),
-            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True)
+            user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
 
         ticket_channel = await guild.create_text_channel(name=channel_name, category=open_category, overwrites=overwrites)
-        await interaction.response.send_message(f"✅ تم فتح تذكرتك بنجاح: {ticket_channel.mention}", ephemeral=True)
-
-        embed_welcome = discord.Embed(
-            title=ticket_title,
-            description=f"{user.mention}\nسيتم الرد عليك في أقرب وقت ممكن من قبل الدعم الفني.",
-            color=0x7f8c8d
-        )
-        embed_welcome.set_footer(text="Droy Store - Ticket System")
-
-        await ticket_channel.send(
-            content=f"{user.mention} {staff_role.mention if staff_role else ''}", 
-            embed=embed_welcome, 
-            view=TicketControlView()
-        )
-
+        await interaction.response.send_message(f"✅ تم فتح التذكرة: {ticket_channel.mention}", ephemeral=True)
+        
+        embed = discord.Embed(title="تذكرة جديدة", description=f"أهلاً {user.mention}، سيتم الرد عليك قريباً.", color=0x7f8c8d)
+        await ticket_channel.send(content=f"{user.mention} {staff_role.mention}", embed=embed, view=TicketControlView())
 
 class TicketDropdownView(View):
     def __init__(self):
         super().__init__(timeout=None)
         self.add_item(TicketSelect())
 
-
-# أمر إرسال بنل التيكت بالسلاش كوماند
-@bot.tree.command(name="send_ticket", description="يرسل بنل التيكت القائمة المنسدلة (للإدارة فقط)")
+# هذا هو الكوماند الذي يرسل البنل
+@bot.tree.command(name="send_ticket", description="إرسال قائمة التذاكر")
 @app_commands.checks.has_permissions(administrator=True)
 async def send_ticket(interaction: discord.Interaction):
-    embed_panel = discord.Embed(
-        title="🎫 مركز الدعم الفني | Droy Store",
-        description="أهلاً بك في مركز المساعدة الخاص بمتجرنا.\n\nالرجاء اختيار القسم المناسب من القائمة بالأسفل لفتح تذكرة جديدة.",
-        color=0x7f8c8d
-    )
-    await interaction.response.send_message("✅ تم إرسال بنل التيكت بنجاح!", ephemeral=True)
-    await interaction.channel.send(embed=embed_panel, view=TicketDropdownView())
-
+    embed = discord.Embed(title="🎫 مركز الدعم الفني", description="اختر نوع التذكرة من القائمة:", color=0x7f8c8d)
+    await interaction.response.send_message("✅ تم الإرسال", ephemeral=True)
+    await interaction.channel.send(embed=embed, view=TicketDropdownView())
 
 # ==========================================
 # ⭐ نظام التقييم — Droy Store (نفس كودك)
