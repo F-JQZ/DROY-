@@ -1,3 +1,4 @@
+import os
 import discord
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
@@ -196,7 +197,7 @@ async def on_message(message):
 async def on_ready():
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
     await bot.change_presence(activity=discord.Game(name="Droy 🚀"))
+
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
     bot.run(TOKEN)
-
