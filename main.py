@@ -1,141 +1,202 @@
 import discord
 from discord.ext import commands
-from discord.ui import View, Modal, TextInput, Select
+from discord.ui import View, Modal, TextInput
 import asyncio
-import os
-import random
 
 intents = discord.Intents.default()
 intents.message_content = True
-intents.guilds = True
 allowed_mentions = discord.AllowedMentions(everyone=True, roles=True, users=True)
-
 bot = commands.Bot(command_prefix="!", intents=intents, allowed_mentions=allowed_mentions)
 
 # ==========================================
-# ⚙️ الإعدادات
-# ==========================================
-TARGET_CHANNEL_ID = 1508308686932803715 
-SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245091722830811218/cdf7074f1d9df649.png"
-OPEN_TICKETS_CATEGORY_ID = 123456789012345678    
-CLOSED_TICKETS_CATEGORY_ID = 876543210987654321 
-STAFF_ROLE_ID = 112233445566778899 
-
-# ==========================================
-# 🎫 نظام التيكت
+# ⚙️ الإعدادات — عدّلها حسب حاجتك
 # ==========================================
 
-class TicketControlView(View):
-    def __init__(self):
-        super().__init__(timeout=None)
+# آيدي روم الفاصل التلقائي (ضع 0 لتعطيله)
+TARGET_CHANNEL_ID = 0  # مثال: 1234567890123456789
 
-    @discord.ui.button(label="Close", style=discord.ButtonStyle.secondary, emoji="🔒", custom_id="persistent_close_ticket_btn")
-    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        channel = interaction.channel
-        guild = interaction.guild
-        closed_category = guild.get_channel(CLOSED_TICKETS_CATEGORY_ID)
-        staff_role = guild.get_role(STAFF_ROLE_ID)
-        
-        new_name = f"🔒-{channel.name}"
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        await channel.edit(name=new_name, category=closed_category, overwrites=overwrites)
-        await channel.send(embed=discord.Embed(description="🔒 **تم إغلاق التذكرة بنجاح.**", color=0x7f8c8d))
-
-class TicketSelect(Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="شراء منتجات المتجر", emoji="🛒", value="buy"),
-            discord.SelectOption(label="استفسار", emoji="❓", value="info")
-        ]
-        super().__init__(placeholder="اضختار نوع التذكرة...", options=options, custom_id="persistent_ticket_select")
-
-    async def callback(self, interaction: discord.Interaction):
-        guild = interaction.guild
-        user = interaction.user
-        staff_role = guild.get_role(STAFF_ROLE_ID)
-        open_category = guild.get_channel(OPEN_TICKETS_CATEGORY_ID)
-        ticket_num = f"{random.randint(1, 9999):04d}"
-        
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            user: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel = await guild.create_text_channel(name=f"{self.values[0]}-{ticket_num}", category=open_category, overwrites=overwrites)
-        await interaction.response.send_message(f"✅ تم فتح التذكرة: {channel.mention}", ephemeral=True)
-        await channel.send(content=f"{user.mention}", embed=discord.Embed(title="تذكرة جديدة", color=0x7f8c8d), view=TicketControlView())
-
-class TicketDropdownView(View):
-    def __init__(self):
-        super().__init__(timeout=None)
-        self.add_item(TicketSelect())
+# رابط صورة الفاصل
+SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245084930121760818/image_2.png"
 
 # ==========================================
-# ⭐ التقييم
+# ⭐ نظام التقييم — Droy Store
 # ==========================================
 
 class FeedbackModal(Modal):
     def __init__(self):
-        super().__init__(title="تقديم تقييم")
-        self.stars = TextInput(label="النجوم (1-5)", min_length=1, max_length=1)
-        self.comment = TextInput(label="رأيك", style=discord.TextStyle.paragraph)
-        self.add_item(self.stars)
-        self.add_item(self.comment)
+        super().__init__(title="تقديم تقييم للمتجر")
+
+        self.stars_input = TextInput(
+            label="عدد النجوم (من 1 إلى 5)",
+            placeholder="اكتب رقم من 1 إلى 5 فقط...",
+            min_length=1,
+            max_length=1,
+            required=True
+        )
+        self.add_item(self.stars_input)
+
+        self.comment_input = TextInput(
+            label="اكتب تقييمك هنا",
+            style=discord.TextStyle.paragraph,
+            placeholder="اكتب رأيك بالخدمة أو المنتج...",
+            min_length=3,
+            max_length=500,
+            required=True
+        )
+        self.add_item(self.comment_input)
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.send_message("✅ شكراً لتقييمك!", ephemeral=True)
-        await interaction.channel.send(embed=discord.Embed(title=f"تقييم: {'⭐'*int(self.stars.value)}", description=self.comment.value, color=0x5c3a75))
+        stars_text = self.stars_input.value.strip()
+        comment = self.comment_input.value
+
+        if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
+            await interaction.response.send_message(
+                "❌ خطأ: يجب أن تكتب رقماً من 1 إلى 5 فقط في خانة النجوم!",
+                ephemeral=True
+            )
+            return
+
+        stars_number = int(stars_text)
+        stars_emojis = "⭐" * stars_number
+
+        embed = discord.Embed(
+            title="✨ شكراً على تقييمك!",
+            description=f"\n```\n• {comment}\n```",
+            color=0x5c3a75
+        )
+        embed.set_author(
+            name=interaction.user.display_name,
+            icon_url=interaction.user.display_avatar.url
+        )
+        embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=True)
+        embed.add_field(name="📦 المنتج :", value="خدمة / منتج من المتجر", inline=True)
+        embed.set_footer(text="Droy Store - نظام التقييمات")
+
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message(
+            "✅ تم إرسال تقييمك بنجاح، شكراً لك!",
+            ephemeral=True
+        )
+
 
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="اضغط هنا للتقييم", style=discord.ButtonStyle.green, custom_id="persistent_feedback_btn")
-    async def open_modal(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="اضغط هنا للتقييم", style=discord.ButtonStyle.green, emoji="📝")
+    async def open_feedback_modal(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(FeedbackModal())
 
+
+@bot.command()
+async def send_review(ctx):
+    """يرسل رسالة التقييم الثابتة مع الزر"""
+    embed = discord.Embed(
+        title="⭐ نظام تقييمات Droy Store",
+        description="عزيزي العميل، يسعدنا سماع رأيك في خدماتنا!\n\nاضغط على الزر بالأسفل لتقديم تقييمك بخصوص الخدمة.",
+        color=0x5c3a75
+    )
+    await ctx.send(embed=embed, view=FeedbackView())
+
+
 # ==========================================
-# 🚀 المتاجر (Persistent)
+# 🚀 متجر البوستات
 # ==========================================
 
-class ShopView(View):
-    def __init__(self, cid, text):
+class BoostView(View):
+    def __init__(self):
         super().__init__(timeout=None)
-        self.text = text
-        self.add_item(discord.ui.Button(label="عرض التفاصيل", style=discord.ButtonStyle.blurple, custom_id=cid))
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        await interaction.response.send_message(self.text, ephemeral=True)
-        return True
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="🛒")
+    async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
+        details_text = (
+            "# **تم تـ9فير بـ0ستات**\n\n"
+            "**1 M0nth**\n"
+            "**14 b00st**\n"
+            "**~~22SAR~~**\n\n"
+            "**3 M0nth**\n"
+            "**14 b00st**\n"
+            "**~~44SAR~~**\n\n"
+            "**السعر الحالي**\n\n"
+            "**1 M0nth**\n"
+            "**14 b00st**\n"
+            "**14SAR**\n\n"
+            "**3 M0nth**\n"
+            "**14 b00st**\n"
+            "**22SAR**\n\n\n"
+            "||@here @everyone||"
+        )
+        await interaction.response.send_message(details_text, ephemeral=True)
+
+
+@bot.command()
+async def send_shop(ctx):
+    """يرسل متجر البوستات"""
+    embed = discord.Embed(
+        title="اشتراكات",
+        description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
+        color=0xf1c40f
+    )
+    embed.set_image(url=SEPARATOR_IMAGE_URL)
+    await ctx.send(embed=embed, view=BoostView())
+
 
 # ==========================================
-# 🏁 تشغيل
+# 🎁 متجر النيترو
+# ==========================================
+
+class NitroView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="🛒")
+    async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
+        details_text = (
+            "# **تم تـ9فير نيتر9 Gift**\n\n"
+            "**Nitr0 M0nth**\n"
+            "**12SAR**\n\n"
+            "||@here @everyone||"
+        )
+        await interaction.response.send_message(details_text, ephemeral=True)
+
+
+@bot.command()
+async def send_nitro(ctx):
+    """يرسل متجر النيترو"""
+    embed = discord.Embed(
+        title="🎁 نيترو",
+        description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
+        color=0xf1c40f
+    )
+    await ctx.send(embed=embed, view=NitroView())
+
+
+# ==========================================
+# 🖼️ الفاصل التلقائي بعد كل رسالة
+# ==========================================
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    if TARGET_CHANNEL_ID != 0 and message.channel.id == TARGET_CHANNEL_ID:
+        embed = discord.Embed(color=message.author.color)
+        embed.set_image(url=SEPARATOR_IMAGE_URL)
+        await message.channel.send(embed=embed)
+
+    await bot.process_commands(message)
+
+
+# ==========================================
+# ✅ تشغيل البوت
 # ==========================================
 
 @bot.event
 async def on_ready():
-    bot.add_view(FeedbackView())
-    bot.add_view(TicketDropdownView())
-    bot.add_view(TicketControlView())
-    bot.add_view(ShopView("p_boost_btn", "تفاصيل البوستات هنا..."))
-    bot.add_view(ShopView("p_nitro_btn", "تفاصيل النيترو هنا..."))
-    print(f'✅ البوت يعمل باسم: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name="droy 🚀"))
+    print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
+    await bot.change_presence(activity=discord.Game(name="Droy 🚀"))
+TOKEN = os.environ.get('DISCORD_TOKEN')
+if __name__ == "__main__":
+    bot.run(TOKEN)
 
-@bot.event
-async def on_message(message):
-    if message.author != bot.user and TARGET_CHANNEL_ID != 0 and message.channel.id == TARGET_CHANNEL_ID:
-        await message.channel.send(embed=discord.Embed().set_image(url=SEPARATOR_IMAGE_URL))
-    await bot.process_commands(message)
-
-# أوامر الإرسال
-@bot.command()
-async def send_ticket(ctx): await ctx.send("مركز التيكت:", view=TicketDropdownView())
-@bot.command()
-async def send_review(ctx): await ctx.send("نظام التقييم:", view=FeedbackView())
-
-bot.run(os.environ.get('DISCORD_TOKEN'))
