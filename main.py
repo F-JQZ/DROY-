@@ -1,33 +1,33 @@
 import discord
+from discord import app_commands  # مكتبة السلاش كوماندز
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput, Select
 import asyncio
 import os
-import random  # أضفنا مكتبة الراندوم لحساب أرقام التيكت من 1 إلى 9999
+import random
 
 intents = discord.Intents.default()
 intents.message_content = True
-intents.guilds = True  # مهمة للتحكم برومات التيكت وصلاحياتها
+intents.guilds = True
 allowed_mentions = discord.AllowedMentions(everyone=True, roles=True, users=True)
-bot = commands.Bot(command_prefix="!", intents=intents, allowed_mentions=allowed_mentions)
+
+# تحويل البوت ليدعم السلاش كوماندز
+bot = commands.Bot(command_prefix="/", intents=intents, allowed_mentions=allowed_mentions)
 
 # ==========================================
 # ⚙️ الإعدادات — عدّلها حسب حاجتك
 # ==========================================
 
-# آيدي روم الفاصل التلقائي (ضع 0 لتعطيله)
 TARGET_CHANNEL_ID = 1508308686932803715 
-
-# رابط صورة الفاصل الأسود (Droy Store)
 SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245091722830811218/cdf7074f1d9df649.png"
 
 # 🎫 إعدادات نظام التيكت (ضع الآيديهات الخاصة بسيرفرك هنا)
-OPEN_TICKETS_CATEGORY_ID = 123456789012345678    # آيدي كاتيغوري التيكتات المفتوحة
-CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  # آيدي كاتيغوري التيكتات المقفلة
-STAFF_ROLE_ID = 112233445566778899               # آيدي رتبة الدعم الفني (الستاف)
+OPEN_TICKETS_CATEGORY_ID = 123456789012345678    
+CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  
+STAFF_ROLE_ID = 112233445566778899               
 
 # ==========================================
-# 🎫 نظام التيكت (Ticket System) — الجديد
+# 🎫 نظام التيكت (Ticket System)
 # ==========================================
 
 class TicketControlView(View):
@@ -37,16 +37,12 @@ class TicketControlView(View):
     @discord.ui.button(label="Close", style=discord.ButtonStyle.secondary, emoji="🔒", custom_id="close_ticket_btn")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
-        
         channel = interaction.channel
         guild = interaction.guild
         closed_category = guild.get_channel(CLOSED_TICKETS_CATEGORY_ID)
         staff_role = guild.get_role(STAFF_ROLE_ID)
         
-        # تعديل اسم الروم ليصبح قبله علامة القفل
         new_name = f"🔒-{channel.name}"
-        
-        # سحب صلاحية الكتابة من الأعضاء وابقائها للستاف
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True)
@@ -54,7 +50,6 @@ class TicketControlView(View):
         
         await channel.edit(name=new_name, category=closed_category, overwrites=overwrites)
         
-        # رسالة الإغلاق باللون الرصاصي التصميمي
         embed_closed = discord.Embed(
             description="🔒 **تم إغلاق التذكرة بنجاح وتحويلها للأرشيف.**",
             color=0x7f8c8d
@@ -65,18 +60,8 @@ class TicketControlView(View):
 class TicketSelect(Select):
     def __init__(self):
         options = [
-            discord.SelectOption(
-                label="شراء منتجات المتجر", 
-                description="لشراء منتجات المتجر اضغط على هذا الخيار", 
-                emoji="🛒", 
-                value="buy"
-            ),
-            discord.SelectOption(
-                label="استفسار", 
-                description="للاستفسار اضغط على هذا الخيار", 
-                emoji="❓", 
-                value="info"
-            )
+            discord.SelectOption(label="شراء منتجات المتجر", description="لشراء منتجات المتجر اضغط على هذا الخيار", emoji="🛒", value="buy"),
+            discord.SelectOption(label="استفسار", description="للاستفسار اضغط على هذا الخيار", emoji="❓", value="info")
         ]
         super().__init__(placeholder="اضغط هنا لاختيار نوع التذكرة...", min_values=1, max_values=1, custom_id="ticket_select_menu")
 
@@ -86,7 +71,6 @@ class TicketSelect(Select):
         staff_role = guild.get_role(STAFF_ROLE_ID)
         open_category = guild.get_channel(OPEN_TICKETS_CATEGORY_ID)
         
-        # عدّاد عشوائي للتيكت من 1 إلى 9999
         ticket_number = f"{random.randint(1, 9999):04d}"
         
         if self.values[0] == "buy":
@@ -102,15 +86,9 @@ class TicketSelect(Select):
             staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True)
         }
 
-        ticket_channel = await guild.create_text_channel(
-            name=channel_name,
-            category=open_category,
-            overwrites=overwrites
-        )
-
+        ticket_channel = await guild.create_text_channel(name=channel_name, category=open_category, overwrites=overwrites)
         await interaction.response.send_message(f"✅ تم فتح تذكرتك بنجاح: {ticket_channel.mention}", ephemeral=True)
 
-        # رسالة ترحيبية باللون الرصاصي التصميمي
         embed_welcome = discord.Embed(
             title=ticket_title,
             description=f"{user.mention}\nسيتم الرد عليك في أقرب وقت ممكن من قبل الدعم الفني.",
@@ -131,17 +109,17 @@ class TicketDropdownView(View):
         self.add_item(TicketSelect())
 
 
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def send_ticket(ctx):
-    """يرسل بنل التيكت القائمة المنسدلة (للإدارة فقط)"""
+# أمر إرسال بنل التيكت (Slash Command)
+@bot.tree.command(name="send_ticket", description="يرسل بنل التيكت القائمة المنسدلة (للإدارة فقط)")
+@app_commands.checks.has_permissions(administrator=True)
+async def send_ticket(interaction: discord.Interaction):
     embed_panel = discord.Embed(
         title="🎫 مركز الدعم الفني | Droy Store",
         description="أهلاً بك في مركز المساعدة الخاص بمتجرنا.\n\nالرجاء اختيار القسم المناسب من القائمة بالأسفل لفتح تذكرة جديدة.",
         color=0x7f8c8d
     )
-    await ctx.send(embed=embed_panel, view=TicketDropdownView())
-    await ctx.message.delete()
+    await interaction.response.send_message("✅ تم إرسال بنل التيكت بنجاح!", ephemeral=True)
+    await interaction.channel.send(embed=embed_panel, view=TicketDropdownView())
 
 # ==========================================
 # ⭐ نظام التقييم — Droy Store
@@ -151,23 +129,10 @@ class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
 
-        self.stars_input = TextInput(
-            label="عدد النجوم (من 1 إلى 5)",
-            placeholder="اكتب رقم من 1 إلى 5 فقط...",
-            min_length=1,
-            max_length=1,
-            required=True
-        )
+        self.stars_input = TextInput(label="عدد النجوم (من 1 إلى 5)", placeholder="اكتب رقم من 1 إلى 5 فقط...", min_length=1, max_length=1, required=True)
         self.add_item(self.stars_input)
 
-        self.comment_input = TextInput(
-            label="اكتب تقييمك هنا",
-            style=discord.TextStyle.paragraph,
-            placeholder="اكتب رأيك بالخدمة أو المنتج...",
-            min_length=3,
-            max_length=500,
-            required=True
-        )
+        self.comment_input = TextInput(label="اكتب تقييمك هنا", style=discord.TextStyle.paragraph, placeholder="اكتب رأيك بالخدمة أو المنتج...", min_length=3, max_length=500, required=True)
         self.add_item(self.comment_input)
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -175,34 +140,26 @@ class FeedbackModal(Modal):
         comment = self.comment_input.value
 
         if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
-            await interaction.response.send_message(
-                "❌ خطأ: يجب أن تكتب رقماً من 1 إلى 5 فقط في خانة النجوم!",
-                ephemeral=True
-            )
+            await interaction.response.send_message("❌ خطأ: يجب أن تكتب رقماً من 1 إلى 5 فقط في خانة النجوم!", ephemeral=True)
             return
 
         stars_number = int(stars_text)
         stars_emojis = "⭐" * stars_number
 
+        # هنا تم تعديل وإصلاح علامات التنصيص الثلاثية المقفلة بشكل صحيح
         embed = discord.Embed(
             title="✨ شكراً على تقييمك!",
-            description=f"\n```\n• {comment}\n
-```",
+            description=f"""\n```\n• {comment}\n
+```""",
             color=0x5c3a75
         )
-        embed.set_author(
-            name=interaction.user.display_name,
-            icon_url=interaction.user.display_avatar.url
-        )
+        embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=True)
         embed.add_field(name="📦 المنتج :", value="خدمة / منتج من المتجر", inline=True)
         embed.set_footer(text="Droy Store - نظام التقييمات")
 
         await interaction.channel.send(embed=embed)
-        await interaction.response.send_message(
-            "✅ تم إرسال تقييمك بنجاح، شكراً لك!",
-            ephemeral=True
-        )
+        await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح، شكراً لك!", ephemeral=True)
 
 
 class FeedbackView(View):
@@ -214,16 +171,16 @@ class FeedbackView(View):
         await interaction.response.send_modal(FeedbackModal())
 
 
-@bot.command()
-async def send_review(ctx):
-    """يرسل رسالة التقييم الثابتة مع الزر"""
+# أمر إرسال التقييم (Slash Command)
+@bot.tree.command(name="send_review", description="يرسل رسالة التقييم الثابتة مع الزر")
+async def send_review(interaction: discord.Interaction):
     embed = discord.Embed(
         title="⭐ نظام تقييمات Droy Store",
         description="عزيزي العميل، يسعدنا سماع رأيك في خدماتنا!\n\nاضغط على الزر بالأسفل لتقديم تقييمك بخصوص الخدمة.",
         color=0x5c3a75
     )
-    await ctx.send(embed=embed, view=FeedbackView())
-
+    await interaction.response.send_message("✅ تم إرسال بنل التقييم بنجاح!", ephemeral=True)
+    await interaction.channel.send(embed=embed, view=FeedbackView())
 
 # ==========================================
 # 🚀 متجر البوستات
@@ -255,17 +212,17 @@ class BoostView(View):
         await interaction.response.send_message(details_text, ephemeral=True)
 
 
-@bot.command()
-async def send_shop(ctx):
-    """يرسل متجر البوستات"""
+# أمر متجر البوستات (Slash Command)
+@bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
+async def send_shop(interaction: discord.Interaction):
     embed = discord.Embed(
         title="اشتراكات",
         description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
         color=0xf1c40f
     )
     embed.set_image(url=SEPARATOR_IMAGE_URL)
-    await ctx.send(embed=embed, view=BoostView())
-
+    await interaction.response.send_message("✅ تم إرسال متجر البوستات بنجاح!", ephemeral=True)
+    await interaction.channel.send(embed=embed, view=BoostView())
 
 # ==========================================
 # 🎁 متجر النيترو
@@ -286,16 +243,16 @@ class NitroView(View):
         await interaction.response.send_message(details_text, ephemeral=True)
 
 
-@bot.command()
-async def send_nitro(ctx):
-    """يرسل متجر النيترو"""
+# أمر متجر النيترو (Slash Command)
+@bot.tree.command(name="send_nitro", description="يرسل متجر النيترو")
+async def send_nitro(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🎁 نيترو",
         description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
         color=0xf1c40f
     )
-    await ctx.send(embed=embed, view=NitroView())
-
+    await interaction.response.send_message("✅ تم إرسال متجر النيترو بنجاح!", ephemeral=True)
+    await interaction.channel.send(embed=embed, view=NitroView())
 
 # ==========================================
 # 🖼️ الفاصل التلقائي بعد كل رسالة
@@ -313,24 +270,28 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-
 # ==========================================
-# ✅ تشغيل البوت
+# ✅ تشغيل البوت ومزامنة الأوامر المائلة
 # ==========================================
 
 @bot.event
 async def on_ready():
-    # تسجيل الـ Views عشان تظل الأزرار والقوائم شغالة حتى لو رستر البوت
     bot.add_view(FeedbackView())
     bot.add_view(BoostView())
     bot.add_view(NitroView())
     bot.add_view(TicketDropdownView())
     bot.add_view(TicketControlView())
     
+    # مزامنة السلاش كوماندز تلقائياً مع السيرفر
+    try:
+        synced = await bot.tree.sync()
+        print(f"⚙️ تم مزامنة {len(synced)} من الأوامر المائلة (Slash Commands) بنجاح!")
+    except Exception as e:
+        print(f"❌ فشل مزامنة الأوامر: {e}")
+        
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name=" droyy 🚀"))
+    await bot.change_presence(activity=discord.Game(name="DROYY "))
 
-# السطر الخاص بالتوكن كما هو بدون تعديل
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
     bot.run(TOKEN)
