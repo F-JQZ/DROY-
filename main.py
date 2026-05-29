@@ -98,7 +98,7 @@ async def send_review(interaction: discord.Interaction):
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     text = ("# **تم تـ9فير بـ0ستات**\n1 Month - 12 SAR\n3 Month - 17SAR\n||@here @everyone||")
-    embed = discord.Embed(title=":126620nitro: البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    embed = discord.Embed(title="blob:https://gemini.google.com/938cf801-e8e3-4907-9cdc-9df6904ddbee البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     embed.set_image(url=IMAGE_URL)
     await interaction.channel.send(embed=embed, view=StoreView(text, "boost_btn"))
 
@@ -106,7 +106,7 @@ async def send_shop(interaction: discord.Interaction):
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     text = ("# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14SAR\n||@here @everyone||")
-    embed = discord.Embed(title=":126620nitro: نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    embed = discord.Embed(title="blob:https://gemini.google.com/938cf801-e8e3-4907-9cdc-9df6904ddbee نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     embed.set_image(url=IMAGE_URL)
     await interaction.channel.send(embed=embed, view=StoreView(text, "nitro_btn"))
 
