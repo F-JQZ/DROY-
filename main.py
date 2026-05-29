@@ -26,7 +26,7 @@ class FeedbackModal(Modal):
         self.comment_input = TextInput(label="اكتب تقييمك", style=discord.TextStyle.paragraph, min_length=3, max_length=500, required=True)
         self.add_item(self.comment_input)
 
-    async def on_submit(self, interaction: discord.Interaction):
+   async def on_submit(self, interaction: discord.Interaction):
         stars_text = self.stars_input.value.strip()
         if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
             await interaction.response.send_message("❌ يجب كتابة رقم من 1 إلى 5 فقط!", ephemeral=True)
@@ -34,12 +34,13 @@ class FeedbackModal(Modal):
 
         stars_emojis = "⭐" * int(stars_text)
         
-        # الحل النهائي للمشكلة: تم دمج النص داخل الـ embed بشكل مباشر وتجنب التداخل
-        desc_text = f"• {self.comment_input.value}"
+        # قمت بوضع النص في متغير واحد لتجنب أي كسر للسطر
+        content = f"• {self.comment_input.value}"
+        description_text = "```\n" + content + "\n```"
         
         embed = discord.Embed(
             title="✨ شكراً على تقييمك!",
-            description=f"```\n{desc_text}\n```",
+            description=description_text,
             color=0x5c3a75
         )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
@@ -48,7 +49,6 @@ class FeedbackModal(Modal):
         
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
-
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
