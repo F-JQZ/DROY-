@@ -13,15 +13,18 @@ IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/124508
 # ==========================================
 # 1. نظام التقييم
 # ==========================================
+# ==========================================
+# ⭐ نظام التقييم (مدمج وجاهز)
+# ==========================================
 class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
         
         # خانة النجوم
-        self.stars_input = TextInput(label="عدد النجوم (1-5)", min_length=1, max_length=1, required=True)
+        self.stars_input = TextInput(label="عدد النجوم (1-5)", placeholder="رقم من 1 إلى 5", min_length=1, max_length=1, required=True)
         self.add_item(self.stars_input)
         
-        # خانة اسم المنتج (جديدة)
+        # خانة اسم المنتج
         self.product_input = TextInput(label="ما هو المنتج الذي اشتريته؟", placeholder="اكتب اسم المنتج هنا...", required=True)
         self.add_item(self.product_input)
         
@@ -30,29 +33,36 @@ class FeedbackModal(Modal):
         self.add_item(self.comment_input)
 
     async def on_submit(self, interaction: discord.Interaction):
-        stars_number = int(self.stars_input.value)
-        stars_emojis = "⭐" * stars_number
+        stars_text = self.stars_input.value.strip()
         
-       embed = discord.Embed(
+        # التحقق من صحة النجوم
+        if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
+            await interaction.response.send_message("❌ خطأ: يجب كتابة رقم من 1 إلى 5 في خانة النجوم!", ephemeral=True)
+            return
+
+        stars_number = int(stars_text)
+        stars_emojis = "⭐" * stars_number
+
+        # إنشاء الـ Embed (استخدام f""" لحل مشكلة كسر السطر)
+        embed = discord.Embed(
             title="✨ شكراً على تقييمك !",
-            description=f"""
-            description=f"```\n• {self.comment_input.value}\n
-```",
+            description=f"""```\n• {self.comment_input.value}\n```""",
             color=0x808080
         )
+        
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=False)
-        
-        # هنا سيظهر المنتج الذي كتبه العميل بدلاً من النص الثابت
         embed.add_field(name="📦 المنتج :", value=self.product_input.value, inline=False)
-        
         embed.set_footer(text="Droy Store - نظام التقييمات")
-        
+
         # إرسال للروم المخصص
         channel = interaction.client.get_channel(1508308686932803715)
+        
         if channel:
             await channel.send(embed=embed)
-            await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
+            await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح للروم المخصص!", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ خطأ: لم يتم العثور على الروم المخصص لإرسال التقييم!", ephemeral=True)
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
