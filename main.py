@@ -16,17 +16,42 @@ IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/124508
 class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
-        self.stars_input = TextInput(label="عدد النجوم (1-5)", min_length=1, max_length=1)
+        
+        # خانة النجوم
+        self.stars_input = TextInput(label="عدد النجوم (1-5)", min_length=1, max_length=1, required=True)
         self.add_item(self.stars_input)
-        self.comment_input = TextInput(label="اكتب تقييمك", style=discord.TextStyle.paragraph)
+        
+        # خانة اسم المنتج (جديدة)
+        self.product_input = TextInput(label="ما هو المنتج الذي اشتريته؟", placeholder="اكتب اسم المنتج هنا...", required=True)
+        self.add_item(self.product_input)
+        
+        # خانة التعليق
+        self.comment_input = TextInput(label="اكتب تقييمك هنا", style=discord.TextStyle.paragraph, required=True)
         self.add_item(self.comment_input)
 
     async def on_submit(self, interaction: discord.Interaction):
-        embed = discord.Embed(title="✨ شكراً على تقييمك!", description=f"التقييم: {'⭐'*int(self.stars_input.value)}\nالرأي: {self.comment_input.value}", color=0x808080)
-        embed.set_image(url=IMAGE_URL)
-        await interaction.channel.send(embed=embed)
-        await interaction.response.send_message("✅ تم الإرسال!", ephemeral=True)
-
+        stars_number = int(self.stars_input.value)
+        stars_emojis = "⭐" * stars_number
+        
+        embed = discord.Embed(
+            title="✨ شكراً على تقييمك !",
+            description=f"```\n• {self.comment_input.value}\n
+```",
+            color=0x808080
+        )
+        embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
+        embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=False)
+        
+        # هنا سيظهر المنتج الذي كتبه العميل بدلاً من النص الثابت
+        embed.add_field(name="📦 المنتج :", value=self.product_input.value, inline=False)
+        
+        embed.set_footer(text="Droy Store - نظام التقييمات")
+        
+        # إرسال للروم المخصص
+        channel = interaction.client.get_channel(1508308686932803715)
+        if channel:
+            await channel.send(embed=embed)
+            await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
