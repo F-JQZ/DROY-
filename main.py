@@ -17,13 +17,14 @@ allowed_mentions = discord.AllowedMentions(everyone=True, roles=True, users=True
 bot = commands.Bot(command_prefix="/", intents=intents, allowed_mentions=allowed_mentions)
 
 # ==========================================
-# ⚙️ الإعدادات — عدّلها حسب آيديهات سيرفرك
+# ⚙️ الإعدادات — آيديهات سيرفرك
 # ==========================================
 
+MY_GUILD_ID = 1502777009087185056  # آيدي السيرفر الخاص بك للمزامنة الفورية
 TARGET_CHANNEL_ID = 1508308686932803715 
 SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245091722830811218/cdf7074f1d9df649.png"
 
-# آيديهات نظام التيكت الخاصة بسيرفرك
+# آيديهات نظام التيكت (عدّلها لاحقاً حسب فئات سيرفرك الجديد لو رغبت)
 OPEN_TICKETS_CATEGORY_ID = 123456789012345678    # آيدي فئة التيكت المفتوحة
 CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  # آيدي فئة الأرشيف/المغلقة
 STAFF_ROLE_ID = 112233445566778899               # آيدي رتبة الدعم الفني
@@ -150,7 +151,8 @@ class FeedbackModal(Modal):
 
         embed = discord.Embed(
             title="✨ شكراً على تقييمك!",
-            description=f"""\n```\n• {comment}\n```""",
+            description=f"""\n```\n• {comment}\n
+```""",
             color=0x5c3a75
         )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
@@ -271,7 +273,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
 # ==========================================
-# ✅ تشغيل البوت ومزامنة الأوامر المائلة
+# ✅ تشغيل البوت والمزامنة الفورية في سيرفرك
 # ==========================================
 
 @bot.event
@@ -283,19 +285,21 @@ async def on_ready():
     bot.add_view(TicketDropdownView())
     bot.add_view(TicketControlView())
     
-    # دالة لمزامنة السلاش كوماندز تلقائيًا مع سيرفرات ديسكورد
+    # دالة لمزامنة السلاش كوماندز تلقائيًا وفوريًا داخل سيرفرك المحدد
     try:
-        synced = await bot.tree.sync()
-        print(f"⚙️ تم مزامنة {len(synced)} من الأوامر المائلة (Slash Commands) بنجاح!")
+        guild = discord.Object(id=MY_GUILD_ID)
+        bot.tree.copy_global_to(guild=guild)
+        synced = await bot.tree.sync(guild=guild)
+        print(f"⚙️ تم مزامنة {len(synced)} من الأوامر المائلة في سيرفرك بنجاح وبشكل فوري!")
     except Exception as e:
         print(f"❌ فشل مزامنة الأوامر: {e}")
         
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
     
-    # الحيا تظهر حالة البوت باسم droy بشكل رسمي وثابت
+    # تظهر حالة البوت باسم droy بشكل رسمي وثابت
     await bot.change_presence(activity=discord.Game(name="droy 🚀"))
 
-# قراءة التوكن من لوحة تحكم Railway بأمان
+# قراءة التوكن من لوحة تحكم Railway أو الاستضافة بأمان
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
     bot.run(TOKEN)
