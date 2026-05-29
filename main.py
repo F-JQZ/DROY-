@@ -79,34 +79,32 @@ class NitroView(View):
 # 📋 الأوامر (محدثة مع إضافة كوماند البانر)
 # ==========================================
 
-# إضافة متغير لرابط الصورة (استبدله برابط صورتك المباشر)
-BANNER_URL = "https://example.com/your-image.png" 
+# ==========================================
+# ⚙️ الإعدادات (ضع رابط الصورة المباشر هنا)
+# ==========================================
+IMAGE_URL = "blob:https://gemini.google.com/1c35e6ff-e5a3-4a56-b24b-d240e7597331" 
 
-@bot.tree.command(name="send_review", description="يرسل رسالة التقييم")
+# ==========================================
+# 📋 الأوامر المحدثة
+# ==========================================
+
+@bot.tree.command(name="send_review", description="يرسل رسالة التقييم مع صورة")
 async def send_review(interaction: discord.Interaction):
     embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="اضغط الزر بالأسفل لتقديم تقييمك.", color=0x5c3a75)
-    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
+    embed.set_image(url=IMAGE_URL) # إضافة الصورة تحت الكلام
     await interaction.response.send_message(embed=embed, view=FeedbackView())
 
-@bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
+@bot.tree.command(name="send_shop", description="يرسل متجر البوستات مع صورة")
 async def send_shop(interaction: discord.Interaction):
-    embed = discord.Embed(title="🎁 بـوستات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
-    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
+    embed = discord.Embed(title="بـوسـتات 🎁", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed.set_image(url=IMAGE_URL) # إضافة الصورة تحت الكلام
     await interaction.response.send_message(embed=embed, view=BoostView())
 
-@bot.tree.command(name="send_nitro", description="يرسل متجر النيترو")
+@bot.tree.command(name="send_nitro", description="يرسل متجر النيترو مع صورة")
 async def send_nitro(interaction: discord.Interaction):
-    embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
-    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
+    embed = discord.Embed(title="نيترو 🎁", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed.set_image(url=IMAGE_URL) # إضافة الصورة تحت الكلام
     await interaction.response.send_message(embed=embed, view=NitroView())
-
-# كوماند جديد لإرسال الصورة فقط (لأغراض التنسيق)
-@bot.tree.command(name="send_banner", description="يرسل صورة البانر فقط")
-@app_commands.describe(url="رابط الصورة المباشر")
-async def send_banner(interaction: discord.Interaction, url: str):
-    embed = discord.Embed(color=0x5c3a75)
-    embed.set_image(url=url)
-    await interaction.response.send_message(embed=embed)
 # ==========================================
 # 🖼️ الفاصل والتشغيل
 # ==========================================
