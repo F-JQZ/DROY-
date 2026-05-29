@@ -53,7 +53,7 @@ class FeedbackModal(Modal):
             title="✨ شكراً على تقييمك!",
             description=f"""\n```\n• {comment}\n
 ```""",
-            color=0x5c3a75
+            color=0x808080
         )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=True)
@@ -118,9 +118,9 @@ class BoostView(View):
 @bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     embed = discord.Embed(
-        title="اشتراكات",
+        title="🎁 البوستات",
         description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
-        color=0xf1c40f
+        color=0x808080
     )
     embed.set_image(url=SEPARATOR_IMAGE_URL)
     await interaction.response.send_message("✅ تم إرسال متجر البوستات بنجاح!", ephemeral=True)
@@ -151,7 +151,7 @@ async def send_nitro(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🎁 نيترو",
         description="اضغط على زر ( عرض جميع التفاصيل )\n\nاضغط الزر بالأسفل لكامل التفاصيل",
-        color=0xf1c40f
+        color=0x808080
     )
     await interaction.response.send_message("✅ تم إرسال متجر النيترو بنجاح!", ephemeral=True)
     await interaction.channel.send(embed=embed, view=NitroView())
