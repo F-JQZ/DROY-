@@ -157,7 +157,7 @@ BANNER_URL = "blob:https://gemini.google.com/1c35e6ff-e5a3-4a56-b24b-d240e759733
 
 @bot.tree.command(name="send_review", description="يرسل رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
-    embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="اضغط الزر بالأسفل لتقديم تقييمك.", color=0x5c3a75)
+    embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="اضغط الزر بالأسفل لتقديم تقييمك.", color=(0x5c3a75)
     embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
     await interaction.response.send_message(embed=embed, view=FeedbackView())
 
