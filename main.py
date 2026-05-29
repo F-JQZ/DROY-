@@ -75,22 +75,38 @@ class NitroView(View):
 # 📋 الأوامر (تم تحويلها لـ Slash Commands)
 # ==========================================
 
+# ==========================================
+# 📋 الأوامر (محدثة مع إضافة كوماند البانر)
+# ==========================================
+
+# إضافة متغير لرابط الصورة (استبدله برابط صورتك المباشر)
+BANNER_URL = "https://example.com/your-image.png" 
+
 @bot.tree.command(name="send_review", description="يرسل رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
     embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="اضغط الزر بالأسفل لتقديم تقييمك.", color=0x5c3a75)
+    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
     await interaction.response.send_message(embed=embed, view=FeedbackView())
 
 @bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
-    embed = discord.Embed(title="بىىوسئئات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
-    embed.set_image(url=SEPARATOR_IMAGE_URL)
+    embed = discord.Embed(title="🎁 بـوستات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
     await interaction.response.send_message(embed=embed, view=BoostView())
 
 @bot.tree.command(name="send_nitro", description="يرسل متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed.set_image(url=BANNER_URL) # إضافة الصورة هنا
     await interaction.response.send_message(embed=embed, view=NitroView())
 
+# كوماند جديد لإرسال الصورة فقط (لأغراض التنسيق)
+@bot.tree.command(name="send_banner", description="يرسل صورة البانر فقط")
+@app_commands.describe(url="رابط الصورة المباشر")
+async def send_banner(interaction: discord.Interaction, url: str):
+    embed = discord.Embed(color=0x5c3a75)
+    embed.set_image(url=url)
+    await interaction.response.send_message(embed=embed)
 # ==========================================
 # 🖼️ الفاصل والتشغيل
 # ==========================================
