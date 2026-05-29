@@ -82,7 +82,7 @@ async def send_review(interaction: discord.Interaction):
 
 @bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
-    embed = discord.Embed(title="اشتراكات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed = discord.Embed(title="بىىوسئئات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
     embed.set_image(url=SEPARATOR_IMAGE_URL)
     await interaction.response.send_message(embed=embed, view=BoostView())
 
