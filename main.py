@@ -16,10 +16,6 @@ bot = commands.Bot(command_prefix="!", intents=intents, allowed_mentions=allowed
 TARGET_CHANNEL_ID = 0  
 SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245084930121760818/image_2.png"
 
-
-
-
-
 # ==========================================
 # ⭐ نظام التقييم — Droy Store (نفس كودك)
 # ==========================================
@@ -86,13 +82,13 @@ async def send_review(interaction: discord.Interaction):
 
 @bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
-    embed = discord.Embed(title="اـوىىىـتات 🎁 د", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed = discord.Embed(title="اشتراكات", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
     embed.set_image(url=SEPARATOR_IMAGE_URL)
     await interaction.response.send_message(embed=embed, view=BoostView())
 
 @bot.tree.command(name="send_nitro", description="يرسل متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
-    embed = discord.Embed(title="🎁 ـنيـتـ،ـرو", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
+    embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل لكامل التفاصيل", color=0xf1c40f)
     await interaction.response.send_message(embed=embed, view=NitroView())
 
 # ==========================================
@@ -112,8 +108,7 @@ async def on_message(message):
 async def on_ready():
     await bot.tree.sync() # هذا السطر ضروري جداً لظهور الكوماندات في الديسكورد
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name="Droy
-    sl6e"))
+    await bot.change_presence(activity=discord.Game(name="Droy 🚀"))
 
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
