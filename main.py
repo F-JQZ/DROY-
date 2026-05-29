@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
 import asyncio
-import os # تم إضافة مكتبة os
+import os
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -33,11 +33,19 @@ class FeedbackModal(Modal):
             return
 
         stars_emojis = "⭐" * int(stars_text)
-        embed = discord.Embed(title="✨ شكراً على تقييمك!", description=f"\n```\n• {self.comment_input.value}\n
-```", color=0x5c3a75)
+        
+        # الحل النهائي للمشكلة: تم دمج النص داخل الـ embed بشكل مباشر وتجنب التداخل
+        desc_text = f"• {self.comment_input.value}"
+        
+        embed = discord.Embed(
+            title="✨ شكراً على تقييمك!",
+            description=f"```\n{desc_text}\n```",
+            color=0x5c3a75
+        )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ التقييم:", value=stars_emojis, inline=True)
         embed.set_footer(text="Droy Store - نظام التقييمات")
+        
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
 
@@ -67,7 +75,7 @@ class ShopView(View):
 @bot.command()
 async def send_shop(ctx):
     text = "# **تم توفير بوستات**\n**1 Month: 14SAR**\n**3 Month: 22SAR**\n||@everyone||"
-    await ctx.send(embed=discord.Embed(title="🎁 البوستات", color=0xf1c40f), view=ShopView(text))
+    await ctx.send(embed=discord.Embed(title="البوستات", color=0xf1c40f), view=ShopView(text))
 
 @bot.command()
 async def send_nitro(ctx):
@@ -75,27 +83,21 @@ async def send_nitro(ctx):
     await ctx.send(embed=discord.Embed(title="🎁 نيترو", color=0xf1c40f), view=ShopView(text))
 
 # ==========================================
-# 🖼️ الفاصل التلقائي (مُصحح)
+# 🖼️ الفاصل التلقائي
 # ==========================================
 @bot.event
 async def on_message(message):
-    # التأكد أن الرسالة ليست من البوت نفسه لتجنب التكرار اللانهائي
     if message.author == bot.user:
         return
 
-    # إرسال الفاصل فقط في القناة المحددة
     if TARGET_CHANNEL_ID != 0 and message.channel.id == TARGET_CHANNEL_ID:
-        # التحقق من أن الرسالة ليست أمراً (تبدأ بـ !) حتى لا يرسل الفاصل فوق الأوامر
-        if not message.content.startswith(bot.command_prefix):
+        if not message.content.startswith("!"):
             embed = discord.Embed(color=message.author.color)
             embed.set_image(url=SEPARATOR_IMAGE_URL)
             await message.channel.send(embed=embed)
 
     await bot.process_commands(message)
 
-# ==========================================
-# تشغيل البوت
-# ==========================================
 @bot.event
 async def on_ready():
     print(f'✅ البوت يعمل: {bot.user}')
