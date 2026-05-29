@@ -111,17 +111,17 @@ async def send_nitro(interaction: discord.Interaction):
     await interaction.channel.send(embed=embed, view=StoreView(text, "nitro_btn"))
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# كلاس زر الإغلاق
+# --- كلاس زر الإغلاق ---
 class CloseButton(View):
-    def __init__(self, owner_id): # أضفنا owner_id هنا
+    def __init__(self, owner_id):
         super().__init__(timeout=None)
-        self.owner_id = owner_id # حفظ الـ ID
+        self.owner_id = owner_id
 
     @discord.ui.button(label="إغلاق التذكرة", style=discord.ButtonStyle.danger, custom_id="close_ticket")
     async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
         admin_role_id = 1234567890 
 
-        # التحقق من الرتبة أو أن المستخدم هو صاحب التذكرة
+        # التأكد أن المستخدم لديه رتبة الإدارة أو هو صاحب التذكرة
         if any(role.id == admin_role_id for role in interaction.user.roles) or interaction.user.id == self.owner_id:
             await interaction.response.send_message("سيتم إغلاق القناة في غضون 5 ثوانٍ...")
             await asyncio.sleep(5)
@@ -129,7 +129,7 @@ class CloseButton(View):
         else:
             await interaction.response.send_message("عذراً، ليس لديك صلاحية لإغلاق هذه التذكرة.", ephemeral=True)
 
-# كلاس القائمة
+# --- كلاس القائمة ---
 class TicketSelect(Select):
     def __init__(self):
         options = [
@@ -149,13 +149,13 @@ class TicketSelect(Select):
             }
         )
 
+        # رسالة ترحيبية
         embed = discord.Embed(
             title="نظام التذاكر",
             description=f"أهلاً {interaction.user.mention}، سيقوم فريق الدعم بمساعدتك قريباً.\n\nللإغلاق اضغط على الزر أدناه.",
             color=discord.Color.green()
         )
 
-        # تمرير ID المستخدم للكلاس
         await channel.send(embed=embed, view=CloseButton(owner_id=interaction.user.id))
         await interaction.response.send_message(f"تم فتح تذكرتك: {channel.mention}", ephemeral=True)
 
@@ -163,12 +163,6 @@ class TicketView(View):
     def __init__(self):
         super().__init__(timeout=None)
         self.add_item(TicketSelect())
-
---- الأوامر ---
-@bot.tree.command(name="ticket", description="إرسال رسالة التذاكر")
-async def ticket(interaction: discord.Interaction):
-    embed = discord.Embed(title="تذكرة...", description="للطلب أو الاستفسار، افتح تذكرة عبر القائمة.", color=0x8B4513)
-    await interaction.response.send_message(embed=embed, view=TicketView())
 
 @bot.event
 async def on_ready():
