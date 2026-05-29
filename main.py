@@ -1,30 +1,32 @@
 import discord
-from discord import app_commands  # مكتبة السلاش كوماندز
+from discord import app_commands  
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput, Select
 import asyncio
 import os
 import random
 
+# تفعيل الـ Intents بالكامل لقراءة الرسائل والأعضاء وتجنب الكراش
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
+intents.members = True 
 allowed_mentions = discord.AllowedMentions(everyone=True, roles=True, users=True)
 
-# تحويل البوت ليدعم السلاش كوماندز
+# إعداد البوت ليدعم السلاش كوماندز رسميًا
 bot = commands.Bot(command_prefix="/", intents=intents, allowed_mentions=allowed_mentions)
 
 # ==========================================
-# ⚙️ الإعدادات — عدّلها حسب حاجتك
+# ⚙️ الإعدادات — عدّلها حسب آيديهات سيرفرك
 # ==========================================
 
 TARGET_CHANNEL_ID = 1508308686932803715 
 SEPARATOR_IMAGE_URL = "https://media.discordapp.net/attachments/1233857597143121920/1245091722830811218/cdf7074f1d9df649.png"
 
-# 🎫 إعدادات نظام التيكت (ضع الآيديهات الخاصة بسيرفرك هنا)
-OPEN_TICKETS_CATEGORY_ID = 123456789012345678    
-CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  
-STAFF_ROLE_ID = 112233445566778899               
+# آيديهات نظام التيكت الخاصة بسيرفرك
+OPEN_TICKETS_CATEGORY_ID = 123456789012345678    # آيدي فئة التيكت المفتوحة
+CLOSED_TICKETS_CATEGORY_ID = 876543210987654321  # آيدي فئة الأرشيف/المغلقة
+STAFF_ROLE_ID = 112233445566778899               # آيدي رتبة الدعم الفني
 
 # ==========================================
 # 🎫 نظام التيكت (Ticket System)
@@ -109,7 +111,7 @@ class TicketDropdownView(View):
         self.add_item(TicketSelect())
 
 
-# أمر إرسال بنل التيكت (Slash Command)
+# أمر إرسال بنل التيكت بالسلاش كوماند
 @bot.tree.command(name="send_ticket", description="يرسل بنل التيكت القائمة المنسدلة (للإدارة فقط)")
 @app_commands.checks.has_permissions(administrator=True)
 async def send_ticket(interaction: discord.Interaction):
@@ -146,11 +148,9 @@ class FeedbackModal(Modal):
         stars_number = int(stars_text)
         stars_emojis = "⭐" * stars_number
 
-        # هنا تم تعديل وإصلاح علامات التنصيص الثلاثية المقفلة بشكل صحيح
         embed = discord.Embed(
             title="✨ شكراً على تقييمك!",
-            description=f"""\n```\n• {comment}\n
-```""",
+            description=f"""\n```\n• {comment}\n```""",
             color=0x5c3a75
         )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
@@ -171,7 +171,7 @@ class FeedbackView(View):
         await interaction.response.send_modal(FeedbackModal())
 
 
-# أمر إرسال التقييم (Slash Command)
+# أمر إرسال التقييم بالسلاش كوماند
 @bot.tree.command(name="send_review", description="يرسل رسالة التقييم الثابتة مع الزر")
 async def send_review(interaction: discord.Interaction):
     embed = discord.Embed(
@@ -212,7 +212,7 @@ class BoostView(View):
         await interaction.response.send_message(details_text, ephemeral=True)
 
 
-# أمر متجر البوستات (Slash Command)
+# أمر متجر البوستات بالسلاش كوماند
 @bot.tree.command(name="send_shop", description="يرسل متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     embed = discord.Embed(
@@ -243,7 +243,7 @@ class NitroView(View):
         await interaction.response.send_message(details_text, ephemeral=True)
 
 
-# أمر متجر النيترو (Slash Command)
+# أمر متجر النيترو بالسلاش كوماند
 @bot.tree.command(name="send_nitro", description="يرسل متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     embed = discord.Embed(
@@ -276,13 +276,14 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
+    # تسجيل الفيو الثابتة حتى لا تتعطل عند إعادة تشغيل البوت
     bot.add_view(FeedbackView())
     bot.add_view(BoostView())
     bot.add_view(NitroView())
     bot.add_view(TicketDropdownView())
     bot.add_view(TicketControlView())
     
-    # مزامنة السلاش كوماندز تلقائياً مع السيرفر
+    # دالة لمزامنة السلاش كوماندز تلقائيًا مع سيرفرات ديسكورد
     try:
         synced = await bot.tree.sync()
         print(f"⚙️ تم مزامنة {len(synced)} من الأوامر المائلة (Slash Commands) بنجاح!")
@@ -290,8 +291,11 @@ async def on_ready():
         print(f"❌ فشل مزامنة الأوامر: {e}")
         
     print(f'✅ تم تشغيل البوت بنجاح باسم: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name="DROYY "))
+    
+    # الحيا تظهر حالة البوت باسم droy بشكل رسمي وثابت
+    await bot.change_presence(activity=discord.Game(name="droy 🚀"))
 
+# قراءة التوكن من لوحة تحكم Railway بأمان
 TOKEN = os.environ.get('DISCORD_TOKEN')
 if __name__ == "__main__":
     bot.run(TOKEN)
