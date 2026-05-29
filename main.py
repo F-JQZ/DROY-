@@ -102,7 +102,7 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f'✅ البوت يعمل: {bot.user}')
-    await bot.change_presence(activity=discord.Game(name="Droy Store 🚀"))
+    await bot.change_presence(activity=discord.Game(name="🚀"))
 
 token = os.environ.get('DISCORD_TOKEN')
 bot.run(token)
