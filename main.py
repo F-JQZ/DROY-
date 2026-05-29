@@ -26,15 +26,13 @@ class FeedbackModal(Modal):
         self.comment_input = TextInput(label="اكتب تقييمك", style=discord.TextStyle.paragraph, min_length=3, max_length=500, required=True)
         self.add_item(self.comment_input)
 
-   async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction):
         stars_text = self.stars_input.value.strip()
         if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
             await interaction.response.send_message("❌ يجب كتابة رقم من 1 إلى 5 فقط!", ephemeral=True)
             return
 
         stars_emojis = "⭐" * int(stars_text)
-        
-        # قمت بوضع النص في متغير واحد لتجنب أي كسر للسطر
         content = f"• {self.comment_input.value}"
         description_text = "```\n" + content + "\n```"
         
@@ -49,9 +47,11 @@ class FeedbackModal(Modal):
         
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
+
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
+    
     @discord.ui.button(label="اضغط هنا للتقييم", style=discord.ButtonStyle.green, emoji="📝")
     async def open_feedback_modal(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(FeedbackModal())
@@ -68,6 +68,7 @@ class ShopView(View):
     def __init__(self, details_text):
         super().__init__(timeout=None)
         self.details_text = details_text
+    
     @discord.ui.button(label="عرض التفاصيل", style=discord.ButtonStyle.blurple, emoji="🛒")
     async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(self.details_text, ephemeral=True)
