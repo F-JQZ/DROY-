@@ -14,7 +14,15 @@ REVIEW_CHANNEL = 1508308686932803715
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="/", intents=intents)
+
+class DroyBot(commands.Bot):
+    async def setup_hook(self):
+        guild = discord.Object(id=GUILD_ID)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
+        print("✅ تمت مزامنة الأوامر مع السيرفر")
+
+bot = DroyBot(command_prefix="/", intents=intents)
 
 # ==========================================
 # 🖼️ صورة Droy Store
@@ -306,7 +314,7 @@ async def send_effects(interaction: discord.Interaction):
 
 
 # ==========================================
-# ✅ تشغيل البوت — sync للسيرفر فقط (سريع)
+# ✅ تشغيل البوت
 # ==========================================
 @bot.event
 async def on_ready():
@@ -314,11 +322,7 @@ async def on_ready():
     bot.add_view(StoreView("", "boost_btn"))
     bot.add_view(StoreView("", "nitro_btn"))
     bot.add_view(EffectsView())
-
-    guild = discord.Object(id=GUILD_ID)
-    bot.tree.copy_global_to(guild=guild)
-    synced = await bot.tree.sync(guild=guild)
-    print(f"✅ البوت يعمل: {bot.user} | مزامنة {len(synced)} أمر")
+    print(f"✅ البوت يعمل: {bot.user}")
 
 
 TOKEN = os.environ.get("DISCORD_TOKEN")
