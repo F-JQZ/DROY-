@@ -9,10 +9,6 @@ import binascii
 GUILD_ID = 1510735912185630812
 REVIEW_CHANNEL = 1508308686932803715
 
-# هذه IDs للإيموجيات الخاصة
-BOOST_EMOJI_ID = 1507172355997433887
-NITRO_EMOJI_ID = 1507172336292466789
-
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -55,11 +51,6 @@ def get_banner_file():
     if not BANNER_BYTES:
         return None
     return discord.File(io.BytesIO(BANNER_BYTES), filename="droy_banner.webp")
-
-
-def emoji_or_fallback(bot_client: commands.Bot, emoji_id: int, fallback: str) -> str:
-    e = bot_client.get_emoji(emoji_id)
-    return str(e) if e else fallback
 
 
 async def send_embed_with_banner(channel, embed, view=None):
@@ -142,6 +133,8 @@ class StoreView(View):
 
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN = "<:droyy:1509400140362809374>"
+EMOJI_SL6E = "<:336249boostgemsmonth3:1507172355997433887>"
+EMOJI_SL6E2 = "<:126620nitro:1507172336292466789>"
 
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
@@ -177,9 +170,6 @@ async def send_review(interaction: discord.Interaction):
 @bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-
-    shop_icon = emoji_or_fallback(interaction.client, BOOST_EMOJI_ID, "🚀")
-
     text = (
         "# **تم تـ9فير بـ0ستات**\n"
         f"1 Month - 12 {EMOJI_COIN}\n"
@@ -187,7 +177,7 @@ async def send_shop(interaction: discord.Interaction):
         "||@here @everyone||"
     )
     embed = discord.Embed(
-        title=f"{shop_icon} البوستات",
+        title="البوستات🚀",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
@@ -197,16 +187,13 @@ async def send_shop(interaction: discord.Interaction):
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-
-    nitro_icon = emoji_or_fallback(interaction.client, NITRO_EMOJI_ID, "🎁")
-
     text = (
         "# **تم تـ9فير نيتر9 Gift**\n"
         f"Nitro Month - 14 {EMOJI_COIN}\n"
         "||@here @everyone||"
     )
     embed = discord.Embed(
-        title=f"{nitro_icon} نيترو",
+        title="نيترو🎁"
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
