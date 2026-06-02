@@ -21,7 +21,7 @@ class DroyBot(commands.Bot):
 bot = DroyBot(command_prefix="/", intents=intents)
 
 # ======= ضع BANNER_B64 الخاص بك هنا =======
- (BANNER_B64 =
+ ( BANNER_B64 =
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
     "+X/M3jegB/X7/l/mL79v03nR/L+oDwaNAD9T+sB/neUX6w9hf9h+th6JxaaGlJP/WpoOB09Igjf9"
@@ -167,7 +167,7 @@ bot = DroyBot(command_prefix="/", intents=intents)
     "vGgonL3WJnT2EiISjuVVnIEMxweWTZdrWubgQc1IFigq6bvAn4qafQ2euJ8hWjbV5T8ZGSo+3j/E"
     "/cKhUcLACZVM6yWNIEIwa15Zfexe0FtqhPzz8PdyBb6EHyRl1EDsZWF6Tt6zVyDNTsTK8bpRhud3"
     "KzansgDIdefJ5Hiah7M+7aGq31ocYQ8IMRaXuIED4Mwl17JZiSFRN/+or2su6VpyQ6nvf1vOVfJZ"
-    "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA=")
+    "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA=" )
    
 
 # ===========================================
