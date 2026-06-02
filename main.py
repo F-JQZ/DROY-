@@ -4,6 +4,7 @@ from discord.ui import View, Modal, TextInput
 import os
 import io
 import base64
+import binascii
 
 GUILD_ID       = 1510735912185630812
 REVIEW_CHANNEL = 1508308686932803715
@@ -14,45 +15,45 @@ intents.message_content = True
 
 class DroyBot(commands.Bot):
     async def setup_hook(self):
+        # لا نخلي البوت يطيح لو ما عنده صلاحية guild sync
         try:
-            # مزامنة أوامر السيرفر (الأسرع)
-            self.tree.clear_commands(guild=GUILD_OBJ)
             synced = await self.tree.sync(guild=GUILD_OBJ)
-            print(f"✅ Guild sync done: {len(synced)}")
-            print("Commands:", [c.name for c in synced])
-
-        except discord.Forbidden as e:
-            # لا يطفّي البوت - fallback
-            print("❌ Guild sync failed: Missing Access")
-            print(f"Details: {e}")
-            print("⚠️ Trying global sync fallback...")
+            print(f"✅ Guild sync: {len(synced)}")
+        except discord.Forbidden:
+            print("⚠️ Missing access to guild sync, using global sync")
             synced = await self.tree.sync()
-            print(f"✅ Global sync done: {len(synced)}")
-            print("Commands:", [c.name for c in synced])
-
+            print(f"✅ Global sync: {len(synced)}")
         except Exception as e:
-            print(f"❌ Unexpected sync error: {e}")
-            # خله يكمل تشغيل بدل الكراش
+            print(f"❌ Sync error: {e}")
 
-bot = DroyBot(command_prefix="/", intents=intents)
+bot = DroyBot(command_prefix="!", intents=intents)
 
-# ======= ضع BANNER_B64 الخاص بك هنا =======
-BANNER_B64 = (
-    "PUT_YOUR_FULL_B64_HERE"
-)
-# ===========================================
+# ======= حط BANNER_B64 كامل هنا =======
+BANNER_B64 = "PUT_YOUR_FULL_B64_HERE"
+# ======================================
+
+# نفك التشفير مرة وحدة فقط (أسرع بكثير)
+BANNER_BYTES = None
+if BANNER_B64 and BANNER_B64 != "PUT_YOUR_FULL_B64_HERE":
+    try:
+        BANNER_BYTES = base64.b64decode(BANNER_B64, validate=False)
+        print("✅ Banner loaded in memory")
+    except (binascii.Error, ValueError) as e:
+        BANNER_BYTES = None
+        print(f"⚠️ Banner decode failed: {e}")
 
 def get_banner_file():
-    data = base64.b64decode(BANNER_B64)
-    return discord.File(io.BytesIO(data), filename="droy_banner.webp")
+    if not BANNER_BYTES:
+        return None
+    return discord.File(io.BytesIO(BANNER_BYTES), filename="droy_banner.webp")
 
 async def send_embed_with_banner(channel, embed, view=None):
     file = get_banner_file()
-    embed.set_image(url="attachment://droy_banner.webp")
-    if view:
+    if file:
+        embed.set_image(url="attachment://droy_banner.webp")
         await channel.send(file=file, embed=embed, view=view)
     else:
-        await channel.send(file=file, embed=embed)
+        await channel.send(embed=embed, view=view)
 
 class FeedbackModal(Modal):
     def __init__(self):
@@ -127,32 +128,44 @@ class EffectsView(View):
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
-# خليه global حتى يشتغل حتى لو guild access فيه مشكلة
-@bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
+# ---- أوامر سريعة الاستجابة ----
+@bot.tree.command(name="send_review", description="إرسال رسالة التقييم", guild=GUILD_OBJ)
 async def send_review(interaction: discord.Interaction):
-    await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
-    embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="عزيزي العميل، يسعدنا سماع رأيك!", color=0x808080)
-    await send_embed_with_banner(interaction.channel, embed, view=FeedbackView())
+    await interaction.response.send_message("✅ تم الاستلام، جاري الإرسال...", ephemeral=True)
+    try:
+        embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="عزيزي العميل، يسعدنا سماع رأيك!", color=0x808080)
+        await send_embed_with_banner(interaction.channel, embed, view=FeedbackView())
+    except Exception as e:
+        await interaction.followup.send(f"❌ صار خطأ: {e}", ephemeral=True)
 
-@bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
+@bot.tree.command(name="send_shop", description="إرسال متجر البوستات", guild=GUILD_OBJ)
 async def send_shop(interaction: discord.Interaction):
-    await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 SAR\n3 Month - 17 SAR\n||@here @everyone||"
-    embed = discord.Embed(title="🚀 البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
+    await interaction.response.send_message("✅ تم الاستلام، جاري الإرسال...", ephemeral=True)
+    try:
+        text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 SAR\n3 Month - 17 SAR\n||@here @everyone||"
+        embed = discord.Embed(title="🚀 البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+        await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
+    except Exception as e:
+        await interaction.followup.send(f"❌ صار خطأ: {e}", ephemeral=True)
 
-@bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
+@bot.tree.command(name="send_nitro", description="إرسال متجر النيترو", guild=GUILD_OBJ)
 async def send_nitro(interaction: discord.Interaction):
-    await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 SAR\n||@here @everyone||"
-    embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
+    await interaction.response.send_message("✅ تم الاستلام، جاري الإرسال...", ephemeral=True)
+    try:
+        text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 SAR\n||@here @everyone||"
+        embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+        await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
+    except Exception as e:
+        await interaction.followup.send(f"❌ صار خطأ: {e}", ephemeral=True)
 
-@bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
+@bot.tree.command(name="send_effects", description="إرسال قسم الافكتات", guild=GUILD_OBJ)
 async def send_effects(interaction: discord.Interaction):
-    await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
-    embed = discord.Embed(title="✨ الافكتات", description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار", color=0x808080)
-    await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
+    await interaction.response.send_message("✅ تم الاستلام، جاري الإرسال...", ephemeral=True)
+    try:
+        embed = discord.Embed(title="✨ الافكتات", description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار", color=0x808080)
+        await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
+    except Exception as e:
+        await interaction.followup.send(f"❌ صار خطأ: {e}", ephemeral=True)
 
 @bot.event
 async def on_ready():
@@ -162,7 +175,19 @@ async def on_ready():
     bot.add_view(EffectsView())
     print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
 
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(f"❌ خطأ بالأمر: {error}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"❌ خطأ بالأمر: {error}", ephemeral=True)
+    except Exception:
+        pass
+    print(f"App command error: {error}")
+
 TOKEN = os.environ.get("DISCORD_TOKEN")
+print("TOKEN FOUND:", bool(TOKEN))
 if TOKEN:
     bot.run(TOKEN)
 else:
