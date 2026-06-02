@@ -261,7 +261,8 @@ class StoreView(View):
 
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN   = "<:droyy:1509400140362809374>"
-
+EMOJI_SL6E   = "<:336249boostgemsmonth3:1507172355997433887>"
+EMOJI_SL6E2  = "<:126620nitro:1507172336292466789>"
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
     f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
@@ -293,15 +294,20 @@ async def send_review(interaction: discord.Interaction):
 @bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 {EMOJI_COIN}\n3 Month - 17{EMOJI_COIN}\n||@here @everyone||"
-    embed = discord.Embed(title="🚀 البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    text =     "# **تم تـ9فير بـ0ستات**\n"
+        f"1 Month - 12 {EMOJI_COIN}\n"
+        f"3 Month - 17 {EMOJI_COIN}\n"
+        "||@here @everyone||"
+    embed = discord.Embed(title=f"البوستات{EMOJI_SL6E}\n", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
 
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 {EMOJI_COIN}\n||@here @everyone||"
-    embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    text = "# **تم تـ9فير نيتر9 Gift**\n"
+        f"Nitro Month - 14 {EMOJI_COIN}\n"
+        "||@here @everyone||"
+    embed = discord.Embed(title=f" نيترو{EMOJI_SL6E2}\n", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
 
 @bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
