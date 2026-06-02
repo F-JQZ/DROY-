@@ -4,12 +4,21 @@ from discord.ui import View, Modal, TextInput
 import os
 import io
 import base64
+import asyncio
+
+# ==========================================
+# ⚙️ إعدادات
+# ==========================================
+GUILD_ID       = 1510735912185630812
+REVIEW_CHANNEL = 1508308686932803715
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="/", intents=intents)
 
-# صورة Droy Store مدمجة مباشرة في الكود
+# ==========================================
+# 🖼️ صورة Droy Store
+# ==========================================
 BANNER_B64 = (
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
@@ -177,11 +186,11 @@ async def send_embed_with_banner(channel, embed, view=None):
 class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
-        self.stars_input = TextInput(label="عدد النجوم (1-5)", placeholder="رقم من 1 إلى 5", min_length=1, max_length=1, required=True)
-        self.add_item(self.stars_input)
+        self.stars_input   = TextInput(label="عدد النجوم (1-5)", placeholder="رقم من 1 إلى 5", min_length=1, max_length=1, required=True)
         self.product_input = TextInput(label="ما هو المنتج الذي اشتريته؟", placeholder="اكتب اسم المنتج هنا...", required=True)
-        self.add_item(self.product_input)
         self.comment_input = TextInput(label="اكتب تقييمك هنا", style=discord.TextStyle.paragraph, required=True)
+        self.add_item(self.stars_input)
+        self.add_item(self.product_input)
         self.add_item(self.comment_input)
 
     async def on_submit(self, interaction: discord.Interaction):
@@ -189,18 +198,17 @@ class FeedbackModal(Modal):
         if not stars_text.isdigit() or not (1 <= int(stars_text) <= 5):
             await interaction.response.send_message("❌ خطأ: يجب كتابة رقم من 1 إلى 5 في خانة النجوم!", ephemeral=True)
             return
-        stars_number = int(stars_text)
-        stars_emojis = "⭐" * stars_number
+        stars_emojis = "⭐" * int(stars_text)
         embed = discord.Embed(
             title="✨ شكراً على تقييمك !",
             description=f"```\n• {self.comment_input.value}\n```",
-            color=0x808080
+            color=0x808080,
         )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=False)
         embed.add_field(name="📦 المنتج :", value=self.product_input.value, inline=False)
         embed.set_footer(text="Droy Store - نظام التقييمات")
-        channel = interaction.client.get_channel(1508308686932803715)
+        channel = interaction.client.get_channel(REVIEW_CHANNEL)
         if channel:
             await channel.send(embed=embed)
             await interaction.response.send_message("✅ تم إرسال تقييمك بنجاح!", ephemeral=True)
@@ -221,7 +229,7 @@ class FeedbackView(View):
 # 🛒 نظام المتجر
 # ==========================================
 class StoreView(View):
-    def __init__(self, details, c_id):
+    def __init__(self, details: str, c_id: str):
         super().__init__(timeout=None)
         self.details = details
         self.show_details.custom_id = c_id
@@ -232,12 +240,41 @@ class StoreView(View):
 
 
 # ==========================================
+# ✨ قسم الافكتات
+# ==========================================
+EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
+EMOJI_COIN   = "<:droyy:1509400140362809374>"
+
+EFFECTS_DETAILS = (
+    "# ✨ باقات الافكتات\n\n"
+    f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **5.99$** ➜ **10.5** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **6.99$** ➜ **12** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **7.99$** ➜ **13** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **9.99$** ➜ **18** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
+)
+
+class EffectsView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="✨", custom_id="effects_btn")
+    async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
+
+
+# ==========================================
 # 📨 الأوامر
 # ==========================================
 @bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
-    embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="عزيزي العميل، يسعدنا سماع رأيك في خدماتنا!", color=0x808080)
+    embed = discord.Embed(
+        title="⭐ نظام تقييمات Droy Store",
+        description="عزيزي العميل، يسعدنا سماع رأيك في خدماتنا!",
+        color=0x808080,
+    )
     await send_embed_with_banner(interaction.channel, embed, view=FeedbackView())
 
 
@@ -257,16 +294,35 @@ async def send_nitro(interaction: discord.Interaction):
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
 
 
+@bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
+async def send_effects(interaction: discord.Interaction):
+    await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
+    embed = discord.Embed(
+        title="✨ الافكتات",
+        description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار",
+        color=0x808080,
+    )
+    await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
+
+
 # ==========================================
-# ✅ تشغيل البوت
+# ✅ تشغيل البوت — sync للسيرفر فقط (سريع)
 # ==========================================
 @bot.event
 async def on_ready():
     bot.add_view(FeedbackView())
     bot.add_view(StoreView("", "boost_btn"))
     bot.add_view(StoreView("", "nitro_btn"))
-    await bot.tree.sync()
-    print(f"✅ البوت يعمل: {bot.user}")
+    bot.add_view(EffectsView())
+
+    guild = discord.Object(id=GUILD_ID)
+    bot.tree.copy_global_to(guild=guild)
+    synced = await bot.tree.sync(guild=guild)
+    print(f"✅ البوت يعمل: {bot.user} | مزامنة {len(synced)} أمر")
 
 
-bot.run(os.environ.get("DISCORD_TOKEN"))
+TOKEN = os.environ.get("DISCORD_TOKEN")
+if TOKEN:
+    bot.run(TOKEN)
+else:
+    print("❌ DISCORD_TOKEN غير موجود.")
