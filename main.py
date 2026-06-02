@@ -293,14 +293,14 @@ async def send_review(interaction: discord.Interaction):
 @bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 SAR\n3 Month - 17 SAR\n||@here @everyone||"
+    text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 {EMOJI_COIN}\n3 Month - 17{EMOJI_COIN}\n||@here @everyone||"
     embed = discord.Embed(title="🚀 البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
 
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 SAR\n||@here @everyone||"
+    text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 {EMOJI_COIN}\n||@here @everyone||"
     embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
 
