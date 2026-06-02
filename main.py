@@ -6,18 +6,16 @@ import io
 import base64
 import binascii
 
-GUILD_ID       = 1510735912185630812
+GUILD_ID = 1510735912185630812
 REVIEW_CHANNEL = 1508308686932803715
 
 intents = discord.Intents.default()
 intents.message_content = True
 
+
 class DroyBot(commands.Bot):
     async def setup_hook(self):
         guild = discord.Object(id=GUILD_ID)
-
-        # لا نمسح الأوامر نهائيًا
-        # نحاول مزامنة السيرفر، وإذا فشلت نعمل fallback global
         try:
             synced = await self.tree.sync(guild=guild)
             print(f"✅ Guild sync: {len(synced)}")
@@ -30,11 +28,12 @@ class DroyBot(commands.Bot):
         except Exception as e:
             print(f"❌ Sync error: {e}")
 
+
 bot = DroyBot(command_prefix="/", intents=intents)
 
 # ======= حط نفس BANNER_B64 القديم كامل هنا (بدون ... ) =======
 BANNER_B64 = (
-    "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
+       "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
     "+X/M3jegB/X7/l/mL79v03nR/L+oDwaNAD9T+sB/neUX6w9hf9h+th6JxaaGlJP/WpoOB09Igjf9"
     "9/0i7ifMG/qZFN+ZHHXnDKCW21RYqVP+TpvOjy5cSMIV50f4j5bqmrKGhlRVULBkP/V8Sxtq2zK0"
@@ -184,7 +183,6 @@ BANNER_B64 = (
 )
 # ===============================================================
 
-# نفك البانر مرة وحدة فقط (أسرع + بدون تعليق)
 BANNER_BYTES = None
 if BANNER_B64 and BANNER_B64 != "PUT_YOUR_FULL_B64_HERE_EXACTLY_AS_IS":
     try:
@@ -194,10 +192,12 @@ if BANNER_B64 and BANNER_B64 != "PUT_YOUR_FULL_B64_HERE_EXACTLY_AS_IS":
         BANNER_BYTES = None
         print(f"⚠️ Banner decode error: {e}")
 
+
 def get_banner_file():
     if not BANNER_BYTES:
         return None
     return discord.File(io.BytesIO(BANNER_BYTES), filename="droy_banner.webp")
+
 
 async def send_embed_with_banner(channel, embed, view=None):
     file = get_banner_file()
@@ -207,12 +207,27 @@ async def send_embed_with_banner(channel, embed, view=None):
     else:
         await channel.send(embed=embed, view=view)
 
+
 class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
-        self.stars_input   = TextInput(label="عدد النجوم (1-5)", placeholder="رقم من 1 إلى 5", min_length=1, max_length=1, required=True)
-        self.product_input = TextInput(label="ما هو المنتج الذي اشتريته؟", placeholder="اكتب اسم المنتج هنا...", required=True)
-        self.comment_input = TextInput(label="اكتب تقييمك هنا", style=discord.TextStyle.paragraph, required=True)
+        self.stars_input = TextInput(
+            label="عدد النجوم (1-5)",
+            placeholder="رقم من 1 إلى 5",
+            min_length=1,
+            max_length=1,
+            required=True,
+        )
+        self.product_input = TextInput(
+            label="ما هو المنتج الذي اشتريته؟",
+            placeholder="اكتب اسم المنتج هنا...",
+            required=True,
+        )
+        self.comment_input = TextInput(
+            label="اكتب تقييمك هنا",
+            style=discord.TextStyle.paragraph,
+            required=True,
+        )
         self.add_item(self.stars_input)
         self.add_item(self.product_input)
         self.add_item(self.comment_input)
@@ -241,6 +256,7 @@ class FeedbackModal(Modal):
         else:
             await interaction.response.send_message("❌ لم يتم العثور على الروم!", ephemeral=True)
 
+
 class FeedbackView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -248,6 +264,7 @@ class FeedbackView(View):
     @discord.ui.button(label="اضغط هنا للتقييم", style=discord.ButtonStyle.green, emoji="📝", custom_id="review_btn")
     async def open_modal(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(FeedbackModal())
+
 
 class StoreView(View):
     def __init__(self, details: str, c_id: str):
@@ -259,10 +276,12 @@ class StoreView(View):
     async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(self.details, ephemeral=True)
 
+
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
-EMOJI_COIN   = "<:droyy:1509400140362809374>"
-EMOJI_SL6E   = "<:336249boostgemsmonth3:1507172355997433887>"
-EMOJI_SL6E2  = "<:126620nitro:1507172336292466789>"
+EMOJI_COIN = "<:droyy:1509400140362809374>"
+EMOJI_SL6E = "<:336249boostgemsmonth3:1507172355997433887>"
+EMOJI_SL6E2 = "<:126620nitro:1507172336292466789>"
+
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
     f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
@@ -273,6 +292,7 @@ EFFECTS_DETAILS = (
     f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
 )
 
+
 class EffectsView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -281,34 +301,50 @@ class EffectsView(View):
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
+
 @bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
         title="⭐ نظام تقييمات Droy Store",
         description="عزيزي العميل، يسعدنا سماع رأيك!",
-        color=0x808080
+        color=0x808080,
     )
     await send_embed_with_banner(interaction.channel, embed, view=FeedbackView())
+
 
 @bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text =     "# **تم تـ9فير بـ0ستات**\n"
+    text = (
+        "# **تم تـ9فير بـ0ستات**\n"
         f"1 Month - 12 {EMOJI_COIN}\n"
         f"3 Month - 17 {EMOJI_COIN}\n"
         "||@here @everyone||"
-    embed = discord.Embed(title=f"البوستات{EMOJI_SL6E}\n", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    )
+    embed = discord.Embed(
+        title=f"البوستات {EMOJI_SL6E}",
+        description="اضغط الزر بالأسفل للتفاصيل",
+        color=0x808080,
+    )
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
+
 
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    text = "# **تم تـ9فير نيتر9 Gift**\n"
+    text = (
+        "# **تم تـ9فير نيتر9 Gift**\n"
         f"Nitro Month - 14 {EMOJI_COIN}\n"
         "||@here @everyone||"
-    embed = discord.Embed(title=f" نيترو{EMOJI_SL6E2}\n", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
+    )
+    embed = discord.Embed(
+        title=f"نيترو {EMOJI_SL6E2}",
+        description="اضغط الزر بالأسفل للتفاصيل",
+        color=0x808080,
+    )
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
+
 
 @bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
 async def send_effects(interaction: discord.Interaction):
@@ -316,18 +352,19 @@ async def send_effects(interaction: discord.Interaction):
     embed = discord.Embed(
         title="✨ الافكتات",
         description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار",
-        color=0x808080
+        color=0x808080,
     )
     await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
 
+
 @bot.event
 async def on_ready():
-    # Persistent views
     bot.add_view(FeedbackView())
     bot.add_view(StoreView("", "boost_btn"))
     bot.add_view(StoreView("", "nitro_btn"))
     bot.add_view(EffectsView())
     print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
+
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
@@ -339,6 +376,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
     except Exception:
         pass
     print(f"App command error: {error}")
+
 
 TOKEN = os.environ.get("DISCORD_TOKEN")
 print("TOKEN FOUND:", bool(TOKEN))
