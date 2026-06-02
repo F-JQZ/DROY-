@@ -33,7 +33,7 @@ bot = DroyBot(command_prefix="/", intents=intents)
 
 # ======= حط نفس BANNER_B64 القديم كامل هنا (بدون ... ) =======
 BANNER_B64 = (
-       "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
+        "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
     "+X/M3jegB/X7/l/mL79v03nR/L+oDwaNAD9T+sB/neUX6w9hf9h+th6JxaaGlJP/WpoOB09Igjf9"
     "9/0i7ifMG/qZFN+ZHHXnDKCW21RYqVP+TpvOjy5cSMIV50f4j5bqmrKGhlRVULBkP/V8Sxtq2zK0"
@@ -279,8 +279,8 @@ class StoreView(View):
 
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN = "<:droyy:1509400140362809374>"
-EMOJI_SL6E = "<:336249boostgemsmonth3:1507172355997433887>"
-EMOJI_SL6E2 = "<:126620nitro:1507172336292466789>"
+EMOJI_SL6E = "<:boostgemsmonth3:1507172355997433887>"
+EMOJI_SL6E2 = "<:nitro:1507172336292466789>"
 
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
@@ -323,7 +323,7 @@ async def send_shop(interaction: discord.Interaction):
         "||@here @everyone||"
     )
     embed = discord.Embed(
-        title=f"البوستات {EMOJI_SL6E}",
+        title=f"{EMOJI_SL6E} البوستات",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
@@ -339,7 +339,7 @@ async def send_nitro(interaction: discord.Interaction):
         "||@here @everyone||"
     )
     embed = discord.Embed(
-        title=f"نيترو {EMOJI_SL6E2}",
+        title=f"{EMOJI_SL6E2} نيترو",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
