@@ -20,8 +20,8 @@ class DroyBot(commands.Bot):
 
 bot = DroyBot(command_prefix="/", intents=intents)
 
-# ضع BANNER_B64 هنا كما هو عندك
-BANNER_B64 = (
+# ======= ضع BANNER_B64 الخاص بك هنا =======
+ (BANNER_B64 =
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
     "+X/M3jegB/X7/l/mL79v03nR/L+oDwaNAD9T+sB/neUX6w9hf9h+th6JxaaGlJP/WpoOB09Igjf9"
@@ -167,21 +167,10 @@ BANNER_B64 = (
     "vGgonL3WJnT2EiISjuVVnIEMxweWTZdrWubgQc1IFigq6bvAn4qafQ2euJ8hWjbV5T8ZGSo+3j/E"
     "/cKhUcLACZVM6yWNIEIwa15Zfexe0FtqhPzz8PdyBb6EHyRl1EDsZWF6Tt6zVyDNTsTK8bpRhud3"
     "KzansgDIdefJ5Hiah7M+7aGq31ocYQ8IMRaXuIED4Mwl17JZiSFRN/+or2su6VpyQ6nvf1vOVfJZ"
-    "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA="
-)
-def get_banner_file():
-    data = base64.b64decode(BANNER_B64)
-    return discord.File(io.BytesIO(data), filename="droy_banner.webp")
-async def send_embed_with_banner(channel, embed, view=None):
-    file = get_banner_file()
-    embed.set_image(url="attachment://droy_banner.webp")
-    if view:
-        await channel.send(file=file, embed=embed, view=view)
-    else:
-        await channel.send(file=file, embed=embed)
+    "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA=")
+   
 
-    "UklGRlgg..."  # <-- الكود الكامل عندك
-)
+# ===========================================
 
 def get_banner_file():
     data = base64.b64decode(BANNER_B64)
@@ -195,7 +184,6 @@ async def send_embed_with_banner(channel, embed, view=None):
     else:
         await channel.send(file=file, embed=embed)
 
-# ==========================================
 class FeedbackModal(Modal):
     def __init__(self):
         super().__init__(title="تقديم تقييم للمتجر")
@@ -212,7 +200,11 @@ class FeedbackModal(Modal):
             await interaction.response.send_message("❌ خطأ: يجب كتابة رقم من 1 إلى 5!", ephemeral=True)
             return
         stars_emojis = "⭐" * int(stars_text)
-        embed = discord.Embed(title="✨ شكراً على تقييمك !", description=f"```\n• {self.comment_input.value}\n```", color=0x808080)
+        embed = discord.Embed(
+            title="✨ شكراً على تقييمك !",
+            description=f"```\n• {self.comment_input.value}\n```",
+            color=0x808080,
+        )
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         embed.add_field(name="⭐ تقييم الخدمة :", value=stars_emojis, inline=False)
         embed.add_field(name="📦 المنتج :", value=self.product_input.value, inline=False)
@@ -242,18 +234,17 @@ class StoreView(View):
     async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(self.details, ephemeral=True)
 
-# ==========================================
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN   = "<:droyy:1509400140362809374>"
 
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
-    f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **5.99$** ➜ **10.5** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **6.99$** ➜ **12** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **7.99$** ➜ **13** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **9.99$** ➜ **18** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **4.99$** \u279c **9** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **5.99$** \u279c **10.5** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **6.99$** \u279c **12** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **7.99$** \u279c **13** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **9.99$** \u279c **18** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **11.99$** \u279c **19.5** {EMOJI_COIN}\n"
 )
 
 class EffectsView(View):
@@ -264,7 +255,6 @@ class EffectsView(View):
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
-# ==========================================
 @bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
@@ -291,7 +281,6 @@ async def send_effects(interaction: discord.Interaction):
     embed = discord.Embed(title="✨ الافكتات", description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
 
-# ==========================================
 @bot.event
 async def on_ready():
     bot.add_view(FeedbackView())
