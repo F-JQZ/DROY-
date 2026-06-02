@@ -14,21 +14,33 @@ intents.message_content = True
 
 class DroyBot(commands.Bot):
     async def setup_hook(self):
-        # تنظيف أوامر السيرفر القديمة حتى يختفي التكرار
-        self.tree.clear_commands(guild=GUILD_OBJ)
+        try:
+            # مزامنة أوامر السيرفر (الأسرع)
+            self.tree.clear_commands(guild=GUILD_OBJ)
+            synced = await self.tree.sync(guild=GUILD_OBJ)
+            print(f"✅ Guild sync done: {len(synced)}")
+            print("Commands:", [c.name for c in synced])
 
-        # مزامنة أوامر السيرفر فقط (تظهر بسرعة)
-        synced = await self.tree.sync(guild=GUILD_OBJ)
-        print(f"✅ تمت مزامنة {len(synced)} أمر")
-        print("Commands:", [c.name for c in synced])
+        except discord.Forbidden as e:
+            # لا يطفّي البوت - fallback
+            print("❌ Guild sync failed: Missing Access")
+            print(f"Details: {e}")
+            print("⚠️ Trying global sync fallback...")
+            synced = await self.tree.sync()
+            print(f"✅ Global sync done: {len(synced)}")
+            print("Commands:", [c.name for c in synced])
+
+        except Exception as e:
+            print(f"❌ Unexpected sync error: {e}")
+            # خله يكمل تشغيل بدل الكراش
 
 bot = DroyBot(command_prefix="/", intents=intents)
 
-# ======= ضع BANNER_B64 الخاص بك هنا (نفس الذي عندك) =======
+# ======= ضع BANNER_B64 الخاص بك هنا =======
 BANNER_B64 = (
-    "PUT_YOUR_FULL_B64_HERE_EXACTLY_AS_IS"
+    "PUT_YOUR_FULL_B64_HERE"
 )
-# =========================================================
+# ===========================================
 
 def get_banner_file():
     data = base64.b64decode(BANNER_B64)
@@ -99,12 +111,12 @@ EMOJI_COIN   = "<:droyy:1509400140362809374>"
 
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
-    f"{EMOJI_DOLLAR} **4.99$** \u279c **9** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **5.99$** \u279c **10.5** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **6.99$** \u279c **12** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **7.99$** \u279c **13** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **9.99$** \u279c **18** {EMOJI_COIN}\n"
-    f"{EMOJI_DOLLAR} **11.99$** \u279c **19.5** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **5.99$** ➜ **10.5** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **6.99$** ➜ **12** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **7.99$** ➜ **13** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **9.99$** ➜ **18** {EMOJI_COIN}\n"
+    f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
 )
 
 class EffectsView(View):
@@ -115,27 +127,28 @@ class EffectsView(View):
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
-@bot.tree.command(name="send_review", description="إرسال رسالة التقييم", guild=GUILD_OBJ)
+# خليه global حتى يشتغل حتى لو guild access فيه مشكلة
+@bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
 async def send_review(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     embed = discord.Embed(title="⭐ نظام تقييمات Droy Store", description="عزيزي العميل، يسعدنا سماع رأيك!", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=FeedbackView())
 
-@bot.tree.command(name="send_shop", description="إرسال متجر البوستات", guild=GUILD_OBJ)
+@bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     text = "# **تم تـ9فير بـ0ستات**\n1 Month - 12 SAR\n3 Month - 17 SAR\n||@here @everyone||"
     embed = discord.Embed(title="🚀 البوستات", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
 
-@bot.tree.command(name="send_nitro", description="إرسال متجر النيترو", guild=GUILD_OBJ)
+@bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     text = "# **تم تـ9فير نيتر9 Gift**\nNitro Month - 14 SAR\n||@here @everyone||"
     embed = discord.Embed(title="🎁 نيترو", description="اضغط الزر بالأسفل للتفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
 
-@bot.tree.command(name="send_effects", description="إرسال قسم الافكتات", guild=GUILD_OBJ)
+@bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
 async def send_effects(interaction: discord.Interaction):
     await interaction.response.send_message("جارٍ الإرسال...", ephemeral=True)
     embed = discord.Embed(title="✨ الافكتات", description="اضغط الزر بالأسفل لعرض جميع الباقات والأسعار", color=0x808080)
@@ -147,7 +160,7 @@ async def on_ready():
     bot.add_view(StoreView("", "boost_btn"))
     bot.add_view(StoreView("", "nitro_btn"))
     bot.add_view(EffectsView())
-    print(f"✅ البوت يعمل: {bot.user}")
+    print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
 
 TOKEN = os.environ.get("DISCORD_TOKEN")
 if TOKEN:
