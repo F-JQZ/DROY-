@@ -305,11 +305,11 @@ EFFECTS_DETAILS = (
 MEMBERS_DETAILS = (
     "# 👥 باقات أعضاء ديسكورد\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
-    f"**500**{EMOJI_COIN} بـ **5** \n"
-    f"**1000**{EMOJI_COIN} بـ **10** \n\n"
+    f"**500**{EMOJI_COIN}  **5** \n"
+    f"**1000**{EMOJI_COIN}  **10** \n\n"
     "-* **اعضاء دسكورد اوفلاين**\n"
-    f"**500** بـ **{EMOJI_COIN}2.50** \n"
-    f"**1000** بـ **{EMOJI_COIN}5** \n"
+    f"**500**  **{EMOJI_COIN}2.50** \n"
+    f"**1000**  **{EMOJI_COIN}5** \n"
 )
 
 
