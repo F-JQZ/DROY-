@@ -403,7 +403,7 @@ async def send_effects(interaction: discord.Interaction):
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
-        title="أعضاء دسكورد",
+        title=f"أعضاء دسكورد{EMOJI_ADD}\n"
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
