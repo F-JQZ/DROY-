@@ -35,7 +35,7 @@ class DroyBot(commands.Bot):
 
 bot = DroyBot(command_prefix="/", intents=intents)
 
-# ======= حط نفس BANNER_B64 القديم كامل هنا =======
+# ======= حط نفس BANNER_B64 القديم كامل هنا (بدون ... ) =======
 BANNER_B64 = (
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
@@ -183,6 +183,7 @@ BANNER_B64 = (
     "/cKhUcLACZVM6yWNIEIwa15Zfexe0FtqhPzz8PdyBb6EHyRl1EDsZWF6Tt6zVyDNTsTK8bpRhud3"
     "KzansgDIdefJ5Hiah7M+7aGq31ocYQ8IMRaXuIED4Mwl17JZiSFRN/+or2su6VpyQ6nvf1vOVfJZ"
     "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA="
+    "..."
 )
 # ===============================================================
 
@@ -301,30 +302,16 @@ EFFECTS_DETAILS = (
     f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
 )
 
-# تم تعديل التفاصيل لتعمل مع النصوص المخفية والأسعار
-BOOST_DETAILS_TEXT = (
-    "# **تم تـ9فير بـ0ستات**\n"
-    f"1 Month - 12 {EMOJI_COIN}\n"
-    f"3 Month - 17 {EMOJI_COIN}\n"
-    "||@here @everyone||"
-)
-
-NITRO_DETAILS_TEXT = (
-    "# **تم تـ9فير نيتر9 Gift**\n"
-    f"Nitro Month - 14 {EMOJI_COIN}\n"
-    "||@here @everyone||"
-)
-
-# تم تعديل اسم المتغير هنا من EMOJI_AD0 إلى EMOJI_ADD
+# تفاصيل باقات الأعضاء الجديدة
 MEMBERS_DETAILS = (
-    f"#**{EMOJI_ADD} باقات أعضاء دسكورد**\n\n"
+    f"#{EMOJI_AD0} باقات أعضاء دسكورد\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
-    f"**{EMOJI_ADD}500** **5**{EMOJI_COIN}  \n"
-    f"**{EMOJI_ADD}1000** **10** {EMOJI_COIN} \n\n"
-    f"-* **{EMOJI_ADD} اعضاء دسكورد اوفلاين**\n"
-    f"**{EMOJI_ADD}500** **2.50**{EMOJI_COIN} \n"
-    f"**{EMOJI_ADD}1000** **5** {EMOJI_COIN}\n"
-    "**اذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
+    f"**500** **5**{EMOJI_COIN}  \n"
+    f"**1000** **10** {EMOJI_COIN} \n\n"
+    "-* **اعضاء دسكورد اوفلاين**\n"
+    f"**500**  **2.50**{EMOJI_COIN} \n"
+    f"**1000**  **5** {EMOJI_COIN}\n"
+    "**ذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
 )
 
 
@@ -337,13 +324,12 @@ class EffectsView(View):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
 
-# كلاس الأزرار الخاص بقسم الأعضاء
+# كلاس الأزرار الخاص بقسم الأعضاء الجديد
 class MembersView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    # تم مسح الـ n\ التي كانت تسبب مشكلة هنا في الإيموجي وتم وضع custom_id ثابت
-    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, custom_id="members_btn")
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji=f"{EMOJI_AD0}\n", custom_id="members_btn")
     async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
 
@@ -365,12 +351,18 @@ async def send_shop(interaction: discord.Interaction):
 
     boost_icon = emoji_or_fallback(interaction.client, BOOST_EMOJI_ID, "💎")
 
+    text = (
+        "# **تم تـ9فير بـ0ستات**\n"
+        f"1 Month - 12 {EMOJI_COIN}\n"
+        f"3 Month - 17 {EMOJI_COIN}\n"
+        "||@here @everyone||"
+    )
     embed = discord.Embed(
         title=f"البوستات {boost_icon}",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
+    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
 
 
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
@@ -379,12 +371,17 @@ async def send_nitro(interaction: discord.Interaction):
 
     nitro_icon = emoji_or_fallback(interaction.client, NITRO_EMOJI_ID, "🎁")
 
+    text = (
+        "# **تم تـ9فير نيتر9 Gift**\n"
+        f"Nitro Month - 14 {EMOJI_COIN}\n"
+        "||@here @everyone||"
+    )
     embed = discord.Embed(
         title=f"نيترو {nitro_icon}",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
+    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
 
 
 @bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
@@ -398,12 +395,12 @@ async def send_effects(interaction: discord.Interaction):
     await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
 
 
-# الأمر الخاص بإرسال قسم الأعضاء
+# الأمر الجديد الخاص بإرسال قسم الأعضاء
 @bot.tree.command(name="send_members", description="إرسال قسم أعضاء دسكورد")
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
-        title=f"أعضاء دسكورد{EMOJI_ADD}\n"
+        title="أعضاء دسكورد",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
@@ -413,11 +410,10 @@ async def send_members(interaction: discord.Interaction):
 @bot.event
 async def on_ready():
     bot.add_view(FeedbackView())
-    # تم تعديل تمرير نصوص التفاصيل هنا للأزرار المسجلة لتعمل بشكل دائم عند الضغط عليها بعد إعادة تشغيل البوت
-    bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
-    bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
+    bot.add_view(StoreView("", "boost_btn"))
+    bot.add_view(StoreView("", "nitro_btn"))
     bot.add_view(EffectsView())
-    bot.add_view(MembersView()) 
+    bot.add_view(MembersView()) # تسجيل عرض الأعضاء الجديد هنا ليعمل بشكل دائم
     print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
 
 
