@@ -9,7 +9,7 @@ import binascii
 GUILD_ID = 1510735912185630812
 REVIEW_CHANNEL = 1508308686932803715
 
-# أيقونات مخصصة (نفس IDs عندك)
+# أيقونات مخصصة
 BOOST_EMOJI_ID = 1507172355997433887   # بوستات
 NITRO_EMOJI_ID = 1507172336292466789   # نيترو
 
@@ -33,9 +33,10 @@ class DroyBot(commands.Bot):
             print(f"❌ Sync error: {e}")
 
 
-bot = DroyBot(command_prefix="/", intents=intents)
+# تم تغيير الـ prefix لعدم التعارض مع السلاش كوماندز
+bot = DroyBot(command_prefix="droy!", intents=intents)
 
-# ======= حط نفس BANNER_B64 القديم كامل هنا (بدون ... ) =======
+# ======= حط نفس BANNER_B64 القديم كامل هنا =======
 BANNER_B64 = (
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
@@ -183,7 +184,6 @@ BANNER_B64 = (
     "/cKhUcLACZVM6yWNIEIwa15Zfexe0FtqhPzz8PdyBb6EHyRl1EDsZWF6Tt6zVyDNTsTK8bpRhud3"
     "KzansgDIdefJ5Hiah7M+7aGq31ocYQ8IMRaXuIED4Mwl17JZiSFRN/+or2su6VpyQ6nvf1vOVfJZ"
     "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA="
-    "..."
 )
 # ===============================================================
 
@@ -276,15 +276,23 @@ class FeedbackView(View):
         await interaction.response.send_modal(FeedbackModal())
 
 
+# تم تعديل الـ StoreView ليقبل custom_id بشكل صحيح للـ Persistent View
 class StoreView(View):
     def __init__(self, details: str, c_id: str):
         super().__init__(timeout=None)
         self.details = details
-        self.show_details.custom_id = c_id
+        # نقوم بإضافة الزر ديناميكياً لتثبيت الـ custom_id بدون مشاكل
+        self.add_item(discord.ui.Button(
+            label="عرض جميع التفاصيل", 
+            style=discord.ButtonStyle.blurple, 
+            emoji="🛒", 
+            custom_id=c_id
+        ))
 
-    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="🛒")
-    async def show_details(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        # عند الضغط على الزر يتم إرسال التفاصيل المخزنة
         await interaction.response.send_message(self.details, ephemeral=True)
+        return True
 
 
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
@@ -302,16 +310,28 @@ EFFECTS_DETAILS = (
     f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
 )
 
-# تفاصيل باقات الأعضاء الجديدة
+BOOST_DETAILS_TEXT = (
+    "# **تم تـ9فير بـ0ستات**\n"
+    f"1 Month - 12 {EMOJI_COIN}\n"
+    f"3 Month - 17 {EMOJI_COIN}\n"
+    "||@here @everyone||"
+)
+
+NITRO_DETAILS_TEXT = (
+    "# **تم تـ9فير نيتر9 Gift**\n"
+    f"Nitro Month - 14 {EMOJI_COIN}\n"
+    "||@here @everyone||"
+)
+
 MEMBERS_DETAILS = (
-    f"#{EMOJI_AD0} باقات أعضاء دسكورد\n\n"
+    f"#**{EMOJI_ADD} باقات أعضاء دسكورد**\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
-    f"**500** **5**{EMOJI_COIN}  \n"
-    f"**1000** **10** {EMOJI_COIN} \n\n"
-    "-* **اعضاء دسكورد اوفلاين**\n"
-    f"**500**  **2.50**{EMOJI_COIN} \n"
-    f"**1000**  **5** {EMOJI_COIN}\n"
-    "**ذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
+    f"**{EMOJI_ADD}500** **5**{EMOJI_COIN}  \n"
+    f"**{EMOJI_ADD}1000** **10** {EMOJI_COIN} \n\n"
+    f"-* **{EMOJI_ADD} اعضاء دسكورد اوفلاين**\n"
+    f"**{EMOJI_ADD}500** **2.50**{EMOJI_COIN} \n"
+    f"**{EMOJI_ADD}1000** **5** {EMOJI_COIN}\n"
+    "**اذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
 )
 
 
@@ -324,12 +344,11 @@ class EffectsView(View):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
 
 
-# كلاس الأزرار الخاص بقسم الأعضاء الجديد
 class MembersView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji=f"{EMOJI_AD0}\n", custom_id="members_btn")
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, custom_id="members_btn")
     async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
 
@@ -348,40 +367,25 @@ async def send_review(interaction: discord.Interaction):
 @bot.tree.command(name="send_shop", description="إرسال متجر البوستات")
 async def send_shop(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-
     boost_icon = emoji_or_fallback(interaction.client, BOOST_EMOJI_ID, "💎")
-
-    text = (
-        "# **تم تـ9فير بـ0ستات**\n"
-        f"1 Month - 12 {EMOJI_COIN}\n"
-        f"3 Month - 17 {EMOJI_COIN}\n"
-        "||@here @everyone||"
-    )
     embed = discord.Embed(
         title=f"البوستات {boost_icon}",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "boost_btn"))
+    await send_embed_with_banner(interaction.channel, embed, view=StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
 
 
 @bot.tree.command(name="send_nitro", description="إرسال متجر النيترو")
 async def send_nitro(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-
     nitro_icon = emoji_or_fallback(interaction.client, NITRO_EMOJI_ID, "🎁")
-
-    text = (
-        "# **تم تـ9فير نيتر9 Gift**\n"
-        f"Nitro Month - 14 {EMOJI_COIN}\n"
-        "||@here @everyone||"
-    )
     embed = discord.Embed(
         title=f"نيترو {nitro_icon}",
         description="اضغط الزر بالأسفل للتفاصيل",
         color=0x808080,
     )
-    await send_embed_with_banner(interaction.channel, embed, view=StoreView(text, "nitro_btn"))
+    await send_embed_with_banner(interaction.channel, embed, view=StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
 
 
 @bot.tree.command(name="send_effects", description="إرسال قسم الافكتات")
@@ -395,12 +399,12 @@ async def send_effects(interaction: discord.Interaction):
     await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
 
 
-# الأمر الجديد الخاص بإرسال قسم الأعضاء
 @bot.tree.command(name="send_members", description="إرسال قسم أعضاء دسكورد")
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
+    # تم إصلاح الخطأ في غلق الـ f-string هنا
     embed = discord.Embed(
-        title="أعضاء دسكورد",
+        title=f"أعضاء دسكورد {EMOJI_ADD}",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
@@ -409,12 +413,13 @@ async def send_members(interaction: discord.Interaction):
 
 @bot.event
 async def on_ready():
+    # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
     bot.add_view(FeedbackView())
-    bot.add_view(StoreView("", "boost_btn"))
-    bot.add_view(StoreView("", "nitro_btn"))
+    bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
+    bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
     bot.add_view(EffectsView())
-    bot.add_view(MembersView()) # تسجيل عرض الأعضاء الجديد هنا ليعمل بشكل دائم
-    print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
+    bot.add_view(MembersView()) 
+    print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
 @bot.tree.error
@@ -435,4 +440,4 @@ print("TOKEN FOUND:", bool(TOKEN))
 if TOKEN:
     bot.run(TOKEN)
 else:
-    print("❌ DISCORD_TOKEN غير موجود.")
+    print("❌ DISCORD_TOKEN غير موجود في البيئة (Environment Variables).")
