@@ -305,11 +305,11 @@ EFFECTS_DETAILS = (
 MEMBERS_DETAILS = (
     "# 👥 باقات أعضاء ديسكورد\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
-    f"**500** بـ **5** {EMOJI_RYAL}\n"
-    f"**1000** بـ **10** {EMOJI_RYAL}\n\n"
+    f"**500** بـ **5** {EMOJI_COIN}\n"
+    f"**1000** بـ **10** {EMOJI_COIN}\n\n"
     "-* **اعضاء دسكورد اوفلاين**\n"
-    f"**500** بـ **2.50** {EMOJI_RYAL}\n"
-    f"**1000** بـ **5** {EMOJI_RYAL}\n"
+    f"**500** بـ **2.50** {EMOJI_COIN}\n"
+    f"**1000** بـ **5** {EMOJI_COIN}\n"
 )
 
 
@@ -398,7 +398,7 @@ async def send_effects(interaction: discord.Interaction):
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
-        title="👥 أعضاء ديسكورد",
+        title="أعضاء ديسكورد👥",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
