@@ -37,7 +37,7 @@ bot = DroyBot(command_prefix="/", intents=intents)
 
 # ======= حط نفس BANNER_B64 القديم كامل هنا (بدون ... ) =======
 BANNER_B64 = (
-        "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
+    "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
     "+X/M3jegB/X7/l/mL79v03nR/L+oDwaNAD9T+sB/neUX6w9hf9h+th6JxaaGlJP/WpoOB09Igjf9"
     "9/0i7ifMG/qZFN+ZHHXnDKCW21RYqVP+TpvOjy5cSMIV50f4j5bqmrKGhlRVULBkP/V8Sxtq2zK0"
@@ -289,6 +289,7 @@ class StoreView(View):
 
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN = "<:droyy:1509400140362809374>"
+EMOJI_RYAL = "<:Dm3_Ryal:1382488114731155456>"
 
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
@@ -300,6 +301,17 @@ EFFECTS_DETAILS = (
     f"{EMOJI_DOLLAR} **11.99$** ➜ **19.5** {EMOJI_COIN}\n"
 )
 
+# تفاصيل باقات الأعضاء الجديدة
+MEMBERS_DETAILS = (
+    "# 👥 باقات أعضاء ديسكورد\n\n"
+    "-* **اعضاء دسكورد اونلاين**\n"
+    f"**500** بـ **5** {EMOJI_RYAL}\n"
+    f"**1000** بـ **10** {EMOJI_RYAL}\n\n"
+    "-* **اعضاء دسكورد اوفلاين**\n"
+    f"**500** بـ **2.50** {EMOJI_RYAL}\n"
+    f"**1000** بـ **5** {EMOJI_RYAL}\n"
+)
+
 
 class EffectsView(View):
     def __init__(self):
@@ -308,6 +320,16 @@ class EffectsView(View):
     @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="✨", custom_id="effects_btn")
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
+
+
+# كلاس الأزرار الخاص بقسم الأعضاء الجديد
+class MembersView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="👥", custom_id="members_btn")
+    async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
 
 
 @bot.tree.command(name="send_review", description="إرسال رسالة التقييم")
@@ -371,12 +393,25 @@ async def send_effects(interaction: discord.Interaction):
     await send_embed_with_banner(interaction.channel, embed, view=EffectsView())
 
 
+# الأمر الجديد الخاص بإرسال قسم الأعضاء
+@bot.tree.command(name="send_members", description="إرسال قسم أعضاء ديسكورد")
+async def send_members(interaction: discord.Interaction):
+    await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
+    embed = discord.Embed(
+        title="👥 أعضاء ديسكورد",
+        description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
+        color=0x808080,
+    )
+    await send_embed_with_banner(interaction.channel, embed, view=MembersView())
+
+
 @bot.event
 async def on_ready():
     bot.add_view(FeedbackView())
     bot.add_view(StoreView("", "boost_btn"))
     bot.add_view(StoreView("", "nitro_btn"))
     bot.add_view(EffectsView())
+    bot.add_view(MembersView()) # تسجيل عرض الأعضاء الجديد هنا ليعمل بشكل دائم
     print(f"✅ البوت يعمل: {bot.user} | guilds={len(bot.guilds)}")
 
 
