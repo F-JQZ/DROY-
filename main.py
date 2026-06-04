@@ -291,6 +291,7 @@ EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN = "<:droyy:1509400140362809374>"
 EMOJI_RYAL = "<:Dm3_Ryal:1382488114731155456>"
 EMOJI_ADD  = "<:DROOY:1512187554475278336>"
+
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
     f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
@@ -303,7 +304,7 @@ EFFECTS_DETAILS = (
 
 # تفاصيل باقات الأعضاء الجديدة
 MEMBERS_DETAILS = (
-    "#     {EMOJI_AD0} باقات أعضاء دسكورد\n\n"
+    f"#{EMOJI_AD0} باقات أعضاء دسكورد\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
     f"**500** **5**{EMOJI_COIN}  \n"
     f"**1000** **10** {EMOJI_COIN} \n\n"
@@ -328,7 +329,7 @@ class MembersView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="👥", custom_id="members_btn")
+    @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji=f"{EMOJI_AD0}\n", custom_id="members_btn")
     async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
 
@@ -395,11 +396,11 @@ async def send_effects(interaction: discord.Interaction):
 
 
 # الأمر الجديد الخاص بإرسال قسم الأعضاء
-@bot.tree.command(name="send_members", description="إرسال قسم أعضاء ديسكورد")
+@bot.tree.command(name="send_members", description="إرسال قسم أعضاء دسكورد")
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
-        title="أعضاء دسكورد{EMOJI_AD0}",
+        title=f"أعضاء دسكورد{EMOJI_AD0}\n",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
