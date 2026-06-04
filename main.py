@@ -317,13 +317,13 @@ NITRO_DETAILS_TEXT = (
 
 # تم تعديل اسم المتغير هنا من EMOJI_AD0 إلى EMOJI_ADD
 MEMBERS_DETAILS = (
-    f"#{EMOJI_ADD} باقات أعضاء دسكورد\n\n"
+    f"#**{EMOJI_ADD} باقات أعضاء دسكورد**\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
-    f"**500** **5**{EMOJI_COIN}  \n"
-    f"**1000** **10** {EMOJI_COIN} \n\n"
-    "-* **اعضاء دسكورد اوفلاين**\n"
-    f"**500** **2.50**{EMOJI_COIN} \n"
-    f"**1000** **5** {EMOJI_COIN}\n"
+    f"**{EMOJI_ADD}500** **5**{EMOJI_COIN}  \n"
+    f"**{EMOJI_ADD}1000** **10** {EMOJI_COIN} \n\n"
+    f"-* **{EMOJI_ADD} اعضاء دسكورد اوفلاين**\n"
+    f"**{EMOJI_ADD}500** **2.50**{EMOJI_COIN} \n"
+    f"**{EMOJI_ADD}1000** **5** {EMOJI_COIN}\n"
     "**اذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
 )
 
