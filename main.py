@@ -290,7 +290,7 @@ class StoreView(View):
 EMOJI_DOLLAR = "<:Droyy:1509313014564651228>"
 EMOJI_COIN = "<:droyy:1509400140362809374>"
 EMOJI_RYAL = "<:Dm3_Ryal:1382488114731155456>"
-
+EMOJI_ADD  = "<:DROOY:1512187554475278336>"
 EFFECTS_DETAILS = (
     "# ✨ باقات الافكتات\n\n"
     f"{EMOJI_DOLLAR} **4.99$** ➜ **9** {EMOJI_COIN}\n"
@@ -303,7 +303,7 @@ EFFECTS_DETAILS = (
 
 # تفاصيل باقات الأعضاء الجديدة
 MEMBERS_DETAILS = (
-    "# 👥 باقات أعضاء ديسكورد\n\n"
+    "#     {EMOJI_AD0} باقات أعضاء دسكورد\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
     f"**500** **5**{EMOJI_COIN}  \n"
     f"**1000** **10** {EMOJI_COIN} \n\n"
@@ -399,7 +399,7 @@ async def send_effects(interaction: discord.Interaction):
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(
-        title="أعضاء ديسكورد👥",
+        title="أعضاء دسكورد{EMOJI_AD0}",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
         color=0x808080,
     )
