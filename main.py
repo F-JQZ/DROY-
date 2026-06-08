@@ -334,6 +334,21 @@ MEMBERS_DETAILS = (
     "**اذا حاب تطلب كميه معينه افتح تكت شرا منتج**"
 )
 
+ACCOUNTS_DETAILS = (
+    "# **إنشاء حسابات دسكورد**\n\n"
+    f"2025 - **4** {EMOJI_COIN}\n"
+    f"2024 - **5** {EMOJI_COIN}\n"
+    f"2023 - **6** {EMOJI_COIN}\n"
+    f"2022 - **7** {EMOJI_COIN}\n"
+    f"2021 - **7.5** {EMOJI_COIN}\n"
+    f"2020 - **8** {EMOJI_COIN}\n"
+    f"2019 - **10** {EMOJI_COIN}\n"
+    f"2018 - **14** {EMOJI_COIN}\n"
+    f"2017 - **18** {EMOJI_COIN}\n\n"
+    "**++**\n"
+    "يمديك تاخذ حساب عشوائي من فترة زمنية معينة مثال: **2017-2018**\n"
+    "**ملاحظة** - يمكن يجيك غير المدة اللي انت طلبت، يمكن يجيك إنشاء أقدم."
+)
 
 class EffectsView(View):
     def __init__(self):
@@ -410,6 +425,11 @@ async def send_members(interaction: discord.Interaction):
     )
     await send_embed_with_banner(interaction.channel, embed, view=MembersView())
 
+bot.tree.command(name="send_accounts", description="إرسال قائمة الحسابات")
+async def send_accounts(interaction: discord.Interaction):
+    await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
+    embed = discord.Embed(title="👤 حسابات ديسكورد", description="اضغط الزر لعرض التفاصيل", color=0x808080)
+    await send_embed_with_banner(interaction.channel, embed, view=StoreView(ACCOUNTS_DETAILS, "accounts_btn"))
 
 @bot.event
 async def on_ready():
@@ -419,6 +439,7 @@ async def on_ready():
     bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
     bot.add_view(EffectsView())
     bot.add_view(MembersView()) 
+    bot.add_view(AccountsView())
     print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
