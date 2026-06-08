@@ -33,10 +33,8 @@ class DroyBot(commands.Bot):
             print(f"❌ Sync error: {e}")
 
 
-# تم تغيير الـ prefix لعدم التعارض مع السلاش كوماندز
 bot = DroyBot(command_prefix="droy!", intents=intents)
 
-# ======= حط نفس BANNER_B64 القديم كامل هنا =======
 BANNER_B64 = (
     "UklGRlggAABXRUJQVlA4IEwgAAAw4QCdASrPAv4APm00l0ckIzGmqHIqUjANiWlu2NK4PKEexfjJ"
     "FMRuMW9SuXlXTY+O5vt/6G3OUHNLYzJvN4b+1nqX+M/z3+b8x/xr3IfbHp4vXfjT+Jw+8Aj8f/of"
@@ -185,7 +183,6 @@ BANNER_B64 = (
     "KzansgDIdefJ5Hiah7M+7aGq31ocYQ8IMRaXuIED4Mwl17JZiSFRN/+or2su6VpyQ6nvf1vOVfJZ"
     "5Vc2EUM0UJJmJDkpxm1PTy4YiX/uAAA="
 )
-# ===============================================================
 
 BANNER_BYTES = None
 if BANNER_B64 and BANNER_B64 != "PUT_YOUR_FULL_B64_HERE_EXACTLY_AS_IS":
@@ -204,7 +201,6 @@ def get_banner_file():
 
 
 def emoji_or_fallback(bot_client, emoji_id: int, fallback: str) -> str:
-    """يرجع الإيموجي كصورة، مو كنص :nitro:"""
     e = bot_client.get_emoji(emoji_id)
     return str(e) if e else fallback
 
@@ -276,21 +272,18 @@ class FeedbackView(View):
         await interaction.response.send_modal(FeedbackModal())
 
 
-# تم تعديل الـ StoreView ليقبل custom_id بشكل صحيح للـ Persistent View
 class StoreView(View):
     def __init__(self, details: str, c_id: str):
         super().__init__(timeout=None)
         self.details = details
-        # نقوم بإضافة الزر ديناميكياً لتثبيت الـ custom_id بدون مشاكل
         self.add_item(discord.ui.Button(
-            label="عرض جميع التفاصيل", 
-            style=discord.ButtonStyle.blurple, 
-            emoji="🛒", 
+            label="عرض جميع التفاصيل",
+            style=discord.ButtonStyle.blurple,
+            emoji="🛒",
             custom_id=c_id
         ))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        # عند الضغط على الزر يتم إرسال التفاصيل المخزنة
         await interaction.response.send_message(self.details, ephemeral=True)
         return True
 
@@ -324,7 +317,7 @@ NITRO_DETAILS_TEXT = (
 )
 
 MEMBERS_DETAILS = (
-    f"#**{EMOJI_ADD} باقات أعضاء دسكورد**\n\n"
+    f"# **{EMOJI_ADD} باقات أعضاء دسكورد**\n\n"
     "-* **اعضاء دسكورد اونلاين**\n"
     f"**{EMOJI_ADD}500** **5**{EMOJI_COIN}  \n"
     f"**{EMOJI_ADD}1000** **10** {EMOJI_COIN} \n\n"
@@ -350,6 +343,7 @@ ACCOUNTS_DETAILS = (
     "**ملاحظة** - يمكن يجيك غير المدة اللي انت طلبت، يمكن يجيك إنشاء أقدم."
 )
 
+
 class EffectsView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -357,14 +351,12 @@ class EffectsView(View):
     @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="✨", custom_id="effects_btn")
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
-class AccountsView(View):
-    def __init__(self):
-        super().__init__(timeout=None)
+
 
 class MembersView(View):
     def __init__(self):
         super().__init__(timeout=None)
-    
+
     @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, custom_id="members_btn")
     async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
@@ -419,7 +411,6 @@ async def send_effects(interaction: discord.Interaction):
 @bot.tree.command(name="send_members", description="إرسال قسم أعضاء دسكورد")
 async def send_members(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
-    # تم إصلاح الخطأ في غلق الـ f-string هنا
     embed = discord.Embed(
         title=f"أعضاء دسكورد {EMOJI_ADD}",
         description="اضغط الزر بالأسفل لعرض باقات الأعضاء (أونلاين / أوفلاين)",
@@ -427,25 +418,23 @@ async def send_members(interaction: discord.Interaction):
     )
     await send_embed_with_banner(interaction.channel, embed, view=MembersView())
 
+
 @bot.tree.command(name="send_accounts", description="إرسال قائمة الحسابات")
 async def send_accounts(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(title="👤 حسابات ديسكورد", description="اضغط الزر لعرض التفاصيل", color=0x808080)
     await send_embed_with_banner(interaction.channel, embed, view=StoreView(ACCOUNTS_DETAILS, "accounts_btn"))
 
+
 @bot.event
 async def on_ready():
-    # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
-    @bot.event
-async def on_ready():
-    # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
     bot.add_view(FeedbackView())
     bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
     bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
+    bot.add_view(StoreView(ACCOUNTS_DETAILS, "accounts_btn"))
     bot.add_view(EffectsView())
-    bot.add_view(MembersView()) 
-    bot.add_view(AccountsView())
-print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
+    bot.add_view(MembersView())
+    print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
 @bot.tree.error
