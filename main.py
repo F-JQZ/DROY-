@@ -427,7 +427,7 @@ async def send_members(interaction: discord.Interaction):
     )
     await send_embed_with_banner(interaction.channel, embed, view=MembersView())
 
-bot.tree.command(name="send_accounts", description="إرسال قائمة الحسابات")
+@bot.tree.command(name="send_accounts", description="إرسال قائمة الحسابات")
 async def send_accounts(interaction: discord.Interaction):
     await interaction.response.send_message("✅ جاري الإرسال...", ephemeral=True)
     embed = discord.Embed(title="👤 حسابات ديسكورد", description="اضغط الزر لعرض التفاصيل", color=0x808080)
@@ -436,13 +436,16 @@ async def send_accounts(interaction: discord.Interaction):
 @bot.event
 async def on_ready():
     # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
+    @bot.event
+async def on_ready():
+    # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
     bot.add_view(FeedbackView())
     bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
     bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
     bot.add_view(EffectsView())
- bot.add_view(MembersView()) 
-bot.add_view(AccountsView()) # الآن ستعمل لأننا أنشأنا الكلاس أعلاه
-    print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
+    bot.add_view(MembersView()) 
+    bot.add_view(AccountsView())
+print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
 @bot.tree.error
