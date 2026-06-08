@@ -436,12 +436,12 @@ async def send_accounts(interaction: discord.Interaction):
 @bot.event
 async def on_ready():
     # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
-  bot.add_view(FeedbackView())
+    bot.add_view(FeedbackView())
     bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
     bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
     bot.add_view(EffectsView())
-    bot.add_view(MembersView()) 
-    bot.add_view(AccountsView()) # الآن ستعمل لأننا أنشأنا الكلاس أعلاه
+ bot.add_view(MembersView()) 
+bot.add_view(AccountsView()) # الآن ستعمل لأننا أنشأنا الكلاس أعلاه
     print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
