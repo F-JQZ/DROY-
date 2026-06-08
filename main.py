@@ -357,12 +357,14 @@ class EffectsView(View):
     @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, emoji="✨", custom_id="effects_btn")
     async def show_effects(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(EFFECTS_DETAILS, ephemeral=True)
-
+class AccountsView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
 
 class MembersView(View):
     def __init__(self):
         super().__init__(timeout=None)
-
+    
     @discord.ui.button(label="عرض جميع التفاصيل", style=discord.ButtonStyle.blurple, custom_id="members_btn")
     async def show_members(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(MEMBERS_DETAILS, ephemeral=True)
@@ -434,12 +436,12 @@ async def send_accounts(interaction: discord.Interaction):
 @bot.event
 async def on_ready():
     # تسجيل جميع الأزرار بشكل دائم عند تشغيل البوت
-    bot.add_view(FeedbackView())
+  bot.add_view(FeedbackView())
     bot.add_view(StoreView(BOOST_DETAILS_TEXT, "boost_btn"))
     bot.add_view(StoreView(NITRO_DETAILS_TEXT, "nitro_btn"))
     bot.add_view(EffectsView())
     bot.add_view(MembersView()) 
-    bot.add_view(AccountsView())
+    bot.add_view(AccountsView()) # الآن ستعمل لأننا أنشأنا الكلاس أعلاه
     print(f"✅ البوت يعمل بنجاح: {bot.user} | سرفرات: {len(bot.guilds)}")
 
 
